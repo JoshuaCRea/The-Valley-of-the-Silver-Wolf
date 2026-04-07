@@ -403,8 +403,24 @@ const FIGHTER_STYLE_COPY = {
 function FighterProfileCard({ player }) {
     const townCopy = getTownCopy(`#${player.name}`);
     const currentMapLocation = TRACK_DETAILS[player.position] || null;
-    const locationStatus = currentMapLocation
-        ? (currentMapLocation.type === "town" ? `In ${currentMapLocation.name}` : "on the road.")
+    const locationStatusNode = currentMapLocation
+        ? (
+            currentMapLocation.type === "town"
+                ? React.createElement(
+                    React.Fragment,
+                    null,
+                    "in ",
+                    React.createElement(
+                        "span",
+                        {
+                            className: "practice-fighter-profile-location-city",
+                            style: { "--location-city-color": currentMapLocation.hue },
+                        },
+                        `${currentMapLocation.name}.`
+                    )
+                )
+                : "on the road."
+        )
         : "on the road.";
     const sigilSrc = getSchoolSigil(player.name);
     const healthStatus = player.alive ? (player.injured ? "injured" : "healthy") : "dead";
@@ -417,6 +433,7 @@ function FighterProfileCard({ player }) {
     const schoolLabelTop = schoolLabelMatch ? schoolLabelMatch[1] : schoolLabel;
     const schoolLabelBottom = schoolLabelMatch ? schoolLabelMatch[2] : "";
     const styleCopy = FIGHTER_STYLE_COPY[player.name] || { style: "TBD", keyword: "TBD" };
+    const styleLineClassName = `practice-fighter-profile-style-line${styleCopy.style.length > 12 ? " is-long" : ""}`;
 
     return React.createElement(
         "div",
@@ -448,7 +465,7 @@ function FighterProfileCard({ player }) {
                     "div",
                     { className: "practice-fighter-profile-style-block" },
                     React.createElement("p", { className: "practice-fighter-profile-style-label" }, "Style"),
-                    React.createElement("p", { className: "practice-fighter-profile-style-line" }, styleCopy.style)
+                    React.createElement("p", { className: styleLineClassName }, styleCopy.style)
                 ),
                 React.createElement(
                     "div",
@@ -576,9 +593,25 @@ function FighterProfileCard({ player }) {
         ),
         React.createElement(
             "div",
-            { className: "practice-fighter-profile-location-section" },
-            React.createElement("p", { className: "practice-fighter-profile-section-label" }, "Currently you are:"),
-            React.createElement("p", { className: "practice-fighter-profile-location-copy" }, locationStatus)
+            { className: "practice-fighter-profile-support-row" },
+            React.createElement(
+                "div",
+                { className: "practice-fighter-profile-location-section" },
+                React.createElement("p", { className: "practice-fighter-profile-section-label" }, "Currently you are:"),
+                React.createElement("p", { className: "practice-fighter-profile-location-copy" }, locationStatusNode)
+            ),
+            React.createElement(
+                "div",
+                { className: "practice-fighter-profile-location-section practice-fighter-profile-support-section" },
+                React.createElement("p", { className: "practice-fighter-profile-section-label" }, "Companion"),
+                React.createElement("p", { className: "practice-fighter-profile-location-copy" }, "None.")
+            ),
+            React.createElement(
+                "div",
+                { className: "practice-fighter-profile-location-section practice-fighter-profile-support-section" },
+                React.createElement("p", { className: "practice-fighter-profile-section-label" }, "Item"),
+                React.createElement("p", { className: "practice-fighter-profile-location-copy" }, "None.")
+            )
         )
     );
 }
