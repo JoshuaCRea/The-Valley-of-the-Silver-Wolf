@@ -1,0 +1,2672 @@
+body {
+   background-color: #D3DEDC;
+}
+
+.map {
+   width: 301px;
+   height: 301px;
+   border-radius: 50%;
+   background: hsla(130, 39%, 23%, 0);
+   position: relative;
+   margin: 25px 25px 25px 50px;
+   display: inline-block;
+}
+
+#valley-map {
+   width: 601px;
+   height: 601px;
+   position: relative;
+   display: inline-block;
+   margin-bottom: 50px;
+}
+
+.location {
+   display: block;
+   position: absolute;
+  top: 51%;
+   left: 51%;
+   margin: -51px;
+   background: rgb(165, 143, 106);
+   border-radius: 51%;
+   text-align: center;
+}
+
+.overlay {
+   position: absolute;
+   width: 100px;
+   height: 100px;
+}
+
+.road {
+   width: 50px;
+   height: 50px;
+   line-height: 50px;
+}
+
+table,
+th,
+td {
+   margin: 75px auto auto auto;
+   font-family: 'Crimson Text', serif;
+   font-size: 20px;
+   left: 0px;
+
+}
+
+.town {
+   width: 100px;
+   height: 100px;
+   line-height: 100px;
+}
+
+.mountain {
+   width: 300px;
+   height: 300px;
+   position: absolute;
+   display: inline-block;
+   transform: rotate(38deg) translate(125px) rotate(-37.5deg);
+}
+
+#Leap-Creek {
+   transform: translate(251px);
+}
+
+#Blackstone {
+   transform: rotate(72deg) translate(251px) rotate(-72deg);
+}
+
+#Fangmarsh {
+   transform: rotate(144deg) translate(251px) rotate(-144deg);
+}
+
+#Underclaw {
+   transform: rotate(216deg) translate(251px) rotate(-216deg);
+}
+
+#Pouch {
+   transform: rotate(288deg) translate(251px) rotate(-288deg);
+}
+
+#roadLCBS {
+   transform: rotate(38deg) translate(277px) rotate(-36deg);
+}
+
+#roadBSFM {
+   transform: rotate(108deg) translate(265px) rotate(-108deg);
+}
+
+#roadFMUC {
+   transform: rotate(180deg) translate(228px) rotate(-180deg);
+}
+
+#roadUCP {
+   transform: rotate(252deg) translate(218px) rotate(-252deg);
+}
+
+#roadPLC {
+   transform: rotate(324deg) translate(255px) rotate(-324deg);
+}
+
+.pip {
+   width: 100px;
+   height: 100px;
+   display: inline-block;
+   position: relative;
+   position: absolute;
+   margin: -51px;
+   visibility: hidden;
+}
+
+.pip-lc {top: 49%; left: 49%;}
+.pip-bs {top: 47%; left: 50%;}
+.pip-fm {top: 46%; left: 51%;}
+.pip-uc {top: 49%; left: 53%;}
+.pip-p {top: 49%; left: 51%;}
+
+.title {
+   font-family: 'Berkshire Swash', cursive;
+   text-align: center;
+   margin-bottom: 60px;
+   font-size: 300%;
+   color: #7C99AC;
+}
+
+.btn {
+   -webkit-border-radius: 28;
+   -moz-border-radius: 28;
+   border-radius: 28px;
+   font-family: 'Crimson Text', serif;
+   color: #ffffff;
+   font-size: 20px;
+   padding: 10px 20px 10px 20px;
+   text-decoration: none;
+   text-align: center;
+}
+
+#p1MoveCwButton {
+   background: #3498db;
+   background-image: -webkit-linear-gradient(top, #4bb7fa, #3498db);
+   background-image: -moz-linear-gradient(top, #4bb7fa, #3498db);
+   background-image: -ms-linear-gradient(top, #4bb7fa, #3498db);
+   background-image: -o-linear-gradient(top, #4bb7fa, #3498db);
+   background-image: linear-gradient(to bottom, #4bb7fa, #3498db);
+}
+
+#p1MoveCwButton:hover {
+   background: #7eb9de;
+   background-image: -webkit-linear-gradient(top, #a8dcff, #7eb9de);
+   background-image: -moz-linear-gradient(top, #a8dcff,  #7eb9de);
+   background-image: -ms-linear-gradient(top, #a8dcff, #7eb9de);
+   background-image: -o-linear-gradient(top, #a8dcff, #7eb9de);
+   background-image: linear-gradient(to bottom, #a8dcff, #7eb9de);
+}
+
+#p1MoveCcwButton {
+   background: #3498db;
+   background-image: -webkit-linear-gradient(top, #4bb7fa, #3498db);
+   background-image: -moz-linear-gradient(top, #4bb7fa, #3498db);
+   background-image: -ms-linear-gradient(top, #4bb7fa, #3498db);
+   background-image: -o-linear-gradient(top, #4bb7fa, #3498db);
+   background-image: linear-gradient(to bottom, #4bb7fa, #3498db);
+}
+
+#p1MoveCcwButton:hover {
+   background: #7eb9de;
+   background-image: -webkit-linear-gradient(top, #a8dcff, #7eb9de);
+   background-image: -moz-linear-gradient(top, #a8dcff,  #7eb9de);
+   background-image: -ms-linear-gradient(top, #a8dcff, #7eb9de);
+   background-image: -o-linear-gradient(top, #a8dcff, #7eb9de);
+   background-image: linear-gradient(to bottom, #a8dcff, #7eb9de);
+}
+
+#p2MoveCwButton {
+   background: #000000;
+   background-image: -webkit-linear-gradient(top, #7d7d7d, #000000);
+   background-image: -moz-linear-gradient(top, #7d7d7d,#000000);
+   background-image: -ms-linear-gradient(top, #7d7d7d, #000000);
+   background-image: -o-linear-gradient(top, #7d7d7d, #000000);
+   background-image: linear-gradient(to bottom, #7d7d7d, #000000);
+ }
+ 
+#p2MoveCwButton:hover {
+   background: #919191;
+   background-image: -webkit-linear-gradient(top, #dedede, #919191);
+   background-image: -moz-linear-gradient(top, #dedede, #919191);
+   background-image: -ms-linear-gradient(top, #dedede, #919191);
+   background-image: -o-linear-gradient(top, #dedede, #919191);
+   background-image: linear-gradient(to bottom, #dedede, #919191);
+ }
+
+#p2MoveCcwButton {
+   background: #000000;
+   background-image: -webkit-linear-gradient(top, #7d7d7d, #000000);
+   background-image: -moz-linear-gradient(top, #7d7d7d,#000000);
+   background-image: -ms-linear-gradient(top, #7d7d7d, #000000);
+   background-image: -o-linear-gradient(top, #7d7d7d, #000000);
+   background-image: linear-gradient(to bottom, #7d7d7d, #000000);
+ }
+ 
+ #p2MoveCcwButton:hover {
+   background: #919191;
+   background-image: -webkit-linear-gradient(top, #dedede, #919191);
+   background-image: -moz-linear-gradient(top, #dedede, #919191);
+   background-image: -ms-linear-gradient(top, #dedede, #919191);
+   background-image: -o-linear-gradient(top, #dedede, #919191);
+   background-image: linear-gradient(to bottom, #dedede, #919191);
+   text-decoration: none;
+   text-align: center;
+ }
+
+ #p3MoveCwButton {
+   background: #ff0000;
+   background-image: -webkit-linear-gradient(top, #ff0000, #a10000);
+   background-image: -moz-linear-gradient(top, #ff0000, #a10000);
+   background-image: -ms-linear-gradient(top, #ff0000, #a10000);
+   background-image: -o-linear-gradient(top, #ff0000, #a10000);
+   background-image: linear-gradient(to bottom, #ff0000, #a10000);
+ }
+ 
+ #p3MoveCwButton:hover {
+   background: #ffabab;
+   background-image: -webkit-linear-gradient(top, #ffabab, #ff5454);
+   background-image: -moz-linear-gradient(top, #ffabab, #ff5454);
+   background-image: -ms-linear-gradient(top, #ffabab, #ff5454);
+   background-image: -o-linear-gradient(top, #ffabab, #ff5454);
+   background-image: linear-gradient(to bottom, #ffabab, #ff5454);
+ }
+
+ #p3MoveCcwButton {
+   background: #ff0000;
+   background-image: -webkit-linear-gradient(top, #ff0000, #a10000);
+   background-image: -moz-linear-gradient(top, #ff0000, #a10000);
+   background-image: -ms-linear-gradient(top, #ff0000, #a10000);
+   background-image: -o-linear-gradient(top, #ff0000, #a10000);
+   background-image: linear-gradient(to bottom, #ff0000, #a10000);
+ }
+ 
+ #p3MoveCcwButton:hover {
+   background: #ffabab;
+   background-image: -webkit-linear-gradient(top, #ffabab, #ff5454);
+   background-image: -moz-linear-gradient(top, #ffabab, #ff5454);
+   background-image: -ms-linear-gradient(top, #ffabab, #ff5454);75
+   background-image: -o-linear-gradient(top, #ffabab, #ff5454);
+   background-image: linear-gradient(to bottom, #ffabab, #ff5454);
+ }
+
+ #p4MoveCwButton {
+   background: #4fed3d;
+   background-image: -webkit-linear-gradient(top, #13a403, #145700);
+   background-image: -moz-linear-gradient(top, #13a403, #145700);
+   background-image: -ms-linear-gradient(top, #13a403, #145700);
+   background-image: -o-linear-gradient(top, #13a403, #145700);
+   background-image: linear-gradient(to bottom, #13a403, #145700);
+ }
+ 
+ #p4MoveCwButton:hover {
+   background: #c6f7c6;
+   background-image: -webkit-linear-gradient(top, #c6f7c6, #8cc771);
+   background-image: -moz-linear-gradient(top, #c6f7c6, #8cc771);
+   background-image: -ms-linear-gradient(top, #c6f7c6, #8cc771);
+   background-image: -o-linear-gradient(top, #c6f7c6, #8cc771);
+   background-image: linear-gradient(to bottom, #c6f7c6, #8cc771);
+ }
+
+ #p4MoveCcwButton {
+   background: #4fed3d;
+   background-image: -webkit-linear-gradient(top, #13a403, #145700);
+   background-image: -moz-linear-gradient(top, #13a403, #145700);
+   background-image: -ms-linear-gradient(top, #13a403, #145700);
+   background-image: -o-linear-gradient(top, #13a403, #145700);
+   background-image: linear-gradient(to bottom, #13a403, #145700);
+ }
+ 
+ #p4MoveCcwButton:hover {
+   background: #c6f7c6;
+   background-image: -webkit-linear-gradient(top, #c6f7c6, #8cc771);
+   background-image: -moz-linear-gradient(top, #c6f7c6, #8cc771);
+   background-image: -ms-linear-gradient(top, #c6f7c6, #8cc771);
+   background-image: -o-linear-gradient(top, #c6f7c6, #8cc771);
+   background-image: linear-gradient(to bottom, #c6f7c6, #8cc771);
+ }
+
+ #p5MoveCwButton {
+   background: #7d60e8;
+   background-image: -webkit-linear-gradient(top, #7d60e8, #5136a3);
+   background-image: -moz-linear-gradient(top, #7d60e8, #5136a3);
+   background-image: -ms-linear-gradient(top, #7d60e8, #5136a3);
+   background-image: -o-linear-gradient(top, #7d60e8, #5136a3);
+   background-image: linear-gradient(to bottom, #7d60e8, #5136a3);
+ }
+ 
+ #p5MoveCwButton:hover {
+   background: #cebcf7;
+   background-image: -webkit-linear-gradient(top, #cebcf7, #9678fa);
+   background-image: -moz-linear-gradient(top, #cebcf7, #9678fa);
+   background-image: -ms-linear-gradient(top, #cebcf7, #9678fa);
+   background-image: -o-linear-gradient(top, #cebcf7, #9678fa);
+   background-image: linear-gradient(to bottom, #cebcf7, #9678fa);
+ }
+
+ #p5MoveCcwButton {
+   background: #7d60e8;
+   background-image: -webkit-linear-gradient(top, #7d60e8, #5136a3);
+   background-image: -moz-linear-gradient(top, #7d60e8, #5136a3);
+   background-image: -ms-linear-gradient(top, #7d60e8, #5136a3);
+   background-image: -o-linear-gradient(top, #7d60e8, #5136a3);
+   background-image: linear-gradient(to bottom, #7d60e8, #5136a3);
+ }
+ 
+ #p5MoveCcwButton:hover {
+   background: #cebcf7;
+   background-image: -webkit-linear-gradient(top, #cebcf7, #9678fa);
+   background-image: -moz-linear-gradient(top, #cebcf7, #9678fa);
+   background-image: -ms-linear-gradient(top, #cebcf7, #9678fa);
+   background-image: -o-linear-gradient(top, #cebcf7, #9678fa);
+   background-image: linear-gradient(to bottom, #cebcf7, #9678fa);
+ }
+
+.practice-page {
+   --practice-bg: #0c111b;
+   --practice-panel: rgba(13, 23, 38, 0.8);
+   --practice-panel-strong: rgba(18, 30, 48, 0.92);
+   --practice-border: rgba(182, 150, 92, 0.28);
+   --practice-text: #f7f2e7;
+   --practice-muted: #b7c3d3;
+   --practice-gold: #d7b372;
+   --practice-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+   margin: 0;
+   min-height: 100vh;
+   background:
+      radial-gradient(circle at top, rgba(77, 125, 176, 0.28), transparent 34%),
+      radial-gradient(circle at bottom left, rgba(185, 114, 73, 0.2), transparent 26%),
+      linear-gradient(145deg, #111725 0%, #090d14 58%, #1a1210 100%);
+   color: var(--practice-text);
+   font-family: 'Manrope', sans-serif;
+}
+
+.practice-shell {
+   width: min(1320px, calc(100% - 32px));
+   margin: 0 auto;
+   padding: 48px 0 64px;
+}
+
+@media (min-width: 1101px) {
+   .practice-shell {
+      display: grid;
+      grid-template-rows: auto auto;
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding-bottom: 32px;
+   }
+
+   .practice-layout {
+      height: auto;
+      min-height: auto;
+   }
+
+   .practice-sidebar {
+      display: flex;
+      flex-direction: column;
+      overflow: visible;
+   }
+
+   .practice-roster-stack {
+      flex: 0 0 auto;
+      min-height: auto;
+      overflow: visible;
+      padding-right: 6px;
+   }
+}
+
+.practice-hero {
+   margin-bottom: 10px;
+   text-align: center;
+}
+
+.practice-kicker,
+.practice-turn-label,
+.practice-stat-label {
+   text-transform: uppercase;
+   letter-spacing: 0.18em;
+   font-size: 0.72rem;
+   color: var(--practice-gold);
+}
+
+.practice-roster-stats .practice-stat-label.is-stamina {
+   display: inline-block;
+   transform: translateX(-0.38em);
+}
+
+.practice-hero h1,
+.practice-turn-card h2,
+.practice-sidebar h2,
+.practice-log-card h3,
+.practice-effect-card h3,
+.practice-roster-card h3,
+.practice-centerpiece strong {
+   font-family: 'Cinzel', serif;
+}
+
+.practice-hero h1 {
+   margin: 0;
+   font-size: clamp(1.35rem, 2.6vw, 2rem);
+   line-height: 0.95;
+}
+
+.practice-intro {
+   display: none;
+}
+
+.practice-layout {
+   display: grid;
+   grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.95fr);
+   gap: 24px;
+   align-items: stretch;
+}
+
+.practice-board-panel,
+.practice-sidebar {
+   background: var(--practice-panel);
+   border: 1px solid var(--practice-border);
+   border-radius: 28px;
+   box-shadow: var(--practice-shadow);
+   backdrop-filter: blur(18px);
+   box-sizing: border-box;
+   align-self: stretch;
+   min-height: 100%;
+}
+
+.practice-board-panel {
+   display: grid;
+   grid-template-rows: auto minmax(0, 1fr);
+   padding: 22px;
+   height: 100%;
+   min-height: 0;
+   overflow: hidden;
+}
+
+.practice-sidebar {
+   padding: 24px;
+   height: auto;
+   min-height: auto;
+}
+
+.practice-board {
+   position: relative;
+   width: min(100%, 600px);
+   aspect-ratio: 1;
+   margin: 0 auto 16px;
+   border-radius: 50%;
+   background:
+      radial-gradient(circle, rgba(210, 179, 114, 0.18) 0, rgba(210, 179, 114, 0.05) 24%, transparent 25%),
+      radial-gradient(circle, rgba(110, 163, 223, 0.18) 0, transparent 58%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+   overflow: visible;
+}
+
+.practice-board::after {
+   content: "";
+   position: absolute;
+   inset: 11%;
+   border-radius: 50%;
+   border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.practice-board-glow {
+   position: absolute;
+   inset: 18%;
+   border-radius: 50%;
+   background: radial-gradient(circle, rgba(215, 179, 114, 0.22), transparent 66%);
+   filter: blur(4px);
+}
+
+.practice-node {
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   width: 108px;
+   height: 108px;
+   transform:
+      rotate(var(--angle))
+      translateY(-255px)
+      rotate(calc(var(--angle) * -1))
+      translate(-50%, -50%);
+   display: grid;
+   place-items: center;
+   text-align: center;
+}
+
+.practice-node-core {
+   width: 100%;
+   min-height: 92px;
+   padding: 18px 14px;
+   border-radius: 22px;
+   border: 1px solid rgba(255, 255, 255, 0.14);
+   background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04)),
+      linear-gradient(135deg, var(--node-color), rgba(8, 14, 22, 0.96));
+   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+   display: grid;
+   place-items: center;
+   font-size: 0.94rem;
+   line-height: 1.25;
+   position: relative;
+}
+
+.practice-node-road .practice-node-core {
+   width: 66px;
+   min-height: 36px;
+   padding: 0;
+   border-radius: 999px;
+   border-color: rgba(126, 94, 44, 0.32);
+   background:
+      linear-gradient(180deg, rgba(255, 242, 214, 0.32), rgba(223, 191, 137, 0.16)),
+      linear-gradient(135deg, #d8bc83, #b89256);
+   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.2);
+}
+
+.practice-node-town {
+   width: 124px;
+   height: 124px;
+}
+
+.practice-node-town .practice-node-core {
+   min-height: 124px;
+   padding: 16px;
+   border-radius: 50%;
+   border: none;
+   overflow: visible;
+   z-index: 1;
+}
+
+.practice-node-sigil {
+   width: 78px;
+   height: 78px;
+   object-fit: contain;
+   display: block;
+   margin: 2px auto 0;
+   filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.28));
+}
+
+.practice-node-sigil.is-destroyed {
+   filter: grayscale(1) brightness(0.25) contrast(1.15) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.38));
+}
+
+.practice-sigil-wrap {
+   position: relative;
+   display: inline-grid;
+   place-items: center;
+}
+
+.practice-sigil-wrap.is-destroyed::before,
+.practice-sigil-wrap.is-destroyed::after {
+   content: "";
+   position: absolute;
+   left: 50%;
+   top: 50%;
+   width: 86%;
+   height: 5px;
+   border-radius: 999px;
+   background: linear-gradient(90deg, rgba(90, 8, 8, 0.18), rgba(178, 22, 22, 0.95), rgba(90, 8, 8, 0.18));
+   box-shadow: 0 0 10px rgba(130, 12, 12, 0.38);
+   pointer-events: none;
+}
+
+.practice-sigil-wrap.is-destroyed::before {
+   transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.practice-sigil-wrap.is-destroyed::after {
+   transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.practice-siege-fire {
+   position: absolute;
+   left: 50%;
+   top: 50%;
+   width: 54%;
+   height: 54%;
+   object-fit: contain;
+   transform: translate(-50%, -50%) scale(0);
+   transform-origin: center;
+   opacity: 0;
+   pointer-events: none;
+   transition: transform 500ms ease, opacity 500ms ease;
+   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.practice-siege-fire.is-visible {
+   transform: translate(-50%, -50%) scale(1);
+   opacity: 1;
+}
+
+.practice-node-label {
+   margin-top: -12px;
+   font-family: "New Rocker", serif;
+   font-size: 0.9rem;
+   font-weight: 400;
+   letter-spacing: 0.06em;
+   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.practice-node-occupants {
+   position: absolute;
+   inset: 0;
+   padding: 0;
+   z-index: 3;
+   pointer-events: none;
+}
+
+.practice-occupant,
+.practice-roster-dot {
+   width: 12px;
+   height: 12px;
+   border-radius: 50%;
+}
+
+.practice-occupant {
+   width: 16px;
+   height: 16px;
+   background: #ffffff;
+   border: 4px solid var(--occupant-outline, #ffffff);
+   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.24);
+   position: relative;
+   position: absolute;
+   transform: translate(-50%, -50%);
+}
+
+.practice-occupant.is-injured::before,
+.practice-occupant.is-injured::after {
+   content: "";
+   position: absolute;
+   left: 50%;
+   top: 50%;
+   width: 20px;
+   height: 2.5px;
+   border-radius: 999px;
+   background: var(--occupant-outline, #ffffff);
+   transform-origin: center;
+}
+
+.practice-occupant.is-injured::before {
+   transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.practice-occupant.is-injured::after {
+   transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.practice-roster-dot {
+   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.16);
+}
+
+.practice-centerpiece {
+   position: absolute;
+   inset: 50%;
+   width: 196px;
+   height: 196px;
+   margin: -98px 0 0 -98px;
+   appearance: none;
+   padding: 0;
+   border: 0;
+   border-radius: 50%;
+   background: transparent;
+   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
+   overflow: hidden;
+   cursor: pointer;
+   z-index: 2;
+}
+
+.practice-centerpiece-image,
+.practice-centerpiece-overlay,
+.practice-centerpiece-text {
+   position: absolute;
+   inset: 0;
+}
+
+.practice-centerpiece-image {
+   display: block;
+   width: 100%;
+   height: 100%;
+   background-image: var(--centerpiece-image);
+   background-repeat: no-repeat;
+   background-position: center;
+   background-size: contain;
+   transition: filter 250ms ease, transform 250ms ease, opacity 250ms ease;
+}
+
+.practice-centerpiece-overlay {
+   background: rgba(10, 7, 4, 0);
+   transition: background 250ms ease;
+}
+
+.practice-centerpiece-text {
+   display: grid;
+   align-content: center;
+   justify-items: center;
+   gap: 2px;
+   padding: 24px;
+   text-align: center;
+   font-family: "New Rocker", serif;
+   font-size: 1.35rem;
+   line-height: 1.05;
+   color: #f4e8c9;
+   opacity: 0;
+   transform: scale(0.95);
+   transition: opacity 250ms ease, transform 250ms ease;
+   pointer-events: none;
+}
+
+.practice-centerpiece-text > span {
+   display: block;
+}
+
+.practice-centerpiece:hover .practice-centerpiece-image,
+.practice-centerpiece:focus-visible .practice-centerpiece-image {
+   filter: blur(2px) brightness(0.45);
+   transform: scale(1.04);
+}
+
+.practice-centerpiece:hover .practice-centerpiece-overlay,
+.practice-centerpiece:focus-visible .practice-centerpiece-overlay {
+   background: rgba(10, 7, 4, 0.32);
+}
+
+.practice-centerpiece.is-active-turn:hover .practice-centerpiece-overlay,
+.practice-centerpiece.is-active-turn:focus-visible .practice-centerpiece-overlay {
+   background: rgba(189, 146, 54, 0.28);
+}
+
+.practice-centerpiece:hover .practice-centerpiece-text,
+.practice-centerpiece:focus-visible .practice-centerpiece-text {
+   opacity: 1;
+   transform: scale(1);
+}
+
+.practice-centerpiece:disabled {
+   cursor: not-allowed;
+   opacity: 0.7;
+}
+
+.practice-centerpiece:focus-visible {
+   outline: 2px solid rgba(244, 232, 201, 0.95);
+   outline-offset: 5px;
+}
+
+.practice-controls {
+   display: grid;
+   grid-template-columns: minmax(0, 1.45fr) minmax(220px, 0.72fr);
+   grid-template-rows: 1fr;
+   gap: 18px;
+   align-items: stretch;
+   height: 100%;
+   min-height: 0;
+}
+
+.practice-turn-card,
+.practice-log-card,
+.practice-roster-card,
+.practice-effect-card {
+   background: var(--practice-panel-strong);
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   border-radius: 22px;
+   padding: 20px;
+}
+
+.practice-log-card {
+   display: flex;
+   flex-direction: column;
+   min-height: 0;
+}
+
+.practice-turn-card,
+.practice-log-card {
+   min-height: 0;
+   overflow: hidden;
+}
+
+.practice-turn-copy,
+.practice-roster-copy,
+.practice-log,
+.practice-effect-card p,
+.practice-roster-location {
+   color: var(--practice-muted);
+}
+
+.practice-fighter-profile {
+   display: grid;
+   gap: 18px;
+}
+
+.practice-fighter-profile-top {
+   display: grid;
+   grid-template-columns: minmax(0, 1fr) 116px 116px;
+   align-items: start;
+   gap: 14px;
+}
+
+.practice-fighter-profile-copy {
+   min-width: 0;
+}
+
+.practice-fighter-profile-copy h2 {
+   margin: 4px 0 2px;
+   font-size: 1.75rem;
+}
+
+.practice-fighter-profile-city-name {
+   position: relative;
+   left: -26px;
+   margin: 6px 0 4px;
+   font-size: 1.34rem;
+   line-height: 1;
+   color: var(--fighter-city-color, #fff9ee);
+   text-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+   white-space: nowrap;
+}
+
+.practice-fighter-profile-kicker,
+.practice-fighter-profile-section-label {
+   margin: 0;
+   text-transform: uppercase;
+   letter-spacing: 0.16em;
+   font-size: 0.64rem;
+   color: var(--practice-gold);
+}
+
+.practice-fighter-profile-school {
+   display: grid;
+   gap: 2px;
+   justify-items: start;
+   margin: 0;
+   min-height: 2.8rem;
+}
+
+.practice-fighter-profile-school-line {
+   margin: 0;
+   color: var(--practice-muted);
+   line-height: 1.3;
+   font-size: clamp(0.88rem, 1.2vw, 1.02rem);
+   text-align: left;
+}
+
+.practice-fighter-profile-style {
+   align-self: start;
+   width: 116px;
+   min-height: 86px;
+   box-sizing: border-box;
+   padding: 7px 4px;
+   border-radius: 14px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   background: rgba(255, 255, 255, 0.04);
+   display: grid;
+   gap: 6px;
+   align-content: start;
+   justify-items: center;
+   text-align: center;
+}
+
+.practice-fighter-profile-style-block {
+   display: grid;
+   gap: 2px;
+   justify-items: center;
+}
+
+.practice-fighter-profile-style-label {
+   margin: 0;
+   text-transform: uppercase;
+   letter-spacing: 0.16em;
+   font-size: 0.58rem;
+   color: var(--practice-gold);
+   text-align: center;
+}
+
+.practice-fighter-profile-style-line {
+   margin: 0;
+   color: var(--practice-muted);
+   line-height: 1.45;
+   text-align: center;
+   font-size: clamp(0.74rem, 0.9vw, 0.86rem);
+   white-space: nowrap;
+}
+
+.practice-fighter-profile-nickname {
+   margin: 0;
+   font-size: 0.62rem;
+   line-height: 1.25;
+   text-align: center;
+   letter-spacing: 0.08em;
+   color: var(--practice-muted);
+   opacity: 0.88;
+   white-space: nowrap;
+   min-height: auto;
+   display: grid;
+   align-items: start;
+}
+
+.practice-fighter-profile-sigil {
+   width: 68px;
+   height: 68px;
+   object-fit: contain;
+   flex: 0 0 auto;
+   border-radius: 50%;
+   background: rgba(12, 18, 28, 0.42);
+   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
+.practice-fighter-profile-sigil-block {
+   display: grid;
+   width: 116px;
+   min-height: 112px;
+   justify-items: center;
+   align-content: start;
+   gap: 6px;
+   padding-left: 8px;
+   box-sizing: border-box;
+}
+
+.practice-fighter-profile-stats {
+   display: grid;
+   grid-template-columns: repeat(5, minmax(0, 1fr));
+   gap: 8px;
+}
+
+.practice-fighter-profile-bottom {
+   display: grid;
+   grid-template-columns: minmax(72px, 0.48fr) minmax(0, 0.72fr) minmax(0, 1.26fr);
+   gap: 12px;
+   align-items: start;
+   margin-top: 2px;
+}
+
+.practice-fighter-profile-health,
+.practice-fighter-profile-techniques,
+.practice-fighter-profile-reputation {
+   display: grid;
+   justify-items: center;
+   align-content: start;
+   gap: 8px;
+}
+
+.practice-fighter-profile-health,
+.practice-fighter-profile-techniques {
+   justify-items: start;
+}
+
+.practice-fighter-profile-techniques .practice-fighter-profile-section-label {
+   margin-left: 5px;
+}
+
+.practice-fighter-profile-health-row {
+   display: grid;
+   justify-items: start;
+   margin-top: 0;
+   margin-left: 2px;
+}
+
+.practice-fighter-profile-face {
+   width: 40px;
+   height: 40px;
+   object-fit: contain;
+   flex: 0 0 auto;
+}
+
+.practice-fighter-profile-techniques-row {
+   display: grid;
+   grid-template-columns: repeat(3, 42px);
+   justify-content: start;
+   gap: 6px;
+   margin-top: 0;
+   margin-left: -28px;
+}
+
+.practice-technique-button {
+   width: 42px;
+   height: 42px;
+   border-radius: 10px;
+   border: 1px solid rgba(255, 255, 255, 0.16);
+   font: inherit;
+   font-weight: 700;
+   font-size: 0.92rem;
+   color: #f7f2e7;
+   display: grid;
+   place-items: center;
+   padding: 0;
+   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 6px 12px rgba(0, 0, 0, 0.18);
+}
+
+.practice-technique-button.is-black {
+   background: linear-gradient(180deg, #575757, #131313);
+}
+
+.practice-technique-button.is-brown {
+   background: linear-gradient(180deg, #8a5a2b, #5f3816);
+}
+
+.practice-technique-button.is-gold {
+   background: linear-gradient(180deg, #f0d17a, #b98c2f);
+   color: #11161f;
+}
+
+.practice-fighter-profile-reputation .practice-roster-bar-indicator {
+   width: min(100%, 248px);
+   margin-top: 0;
+}
+
+.practice-fighter-profile-point-sections {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, max-content));
+   justify-content: center;
+   gap: 28px;
+   margin-top: 6px;
+}
+
+.practice-fighter-profile-point-section {
+   display: grid;
+   justify-items: center;
+   gap: 8px;
+}
+
+.practice-fighter-profile-location-section {
+   width: min(100%, 34%);
+   min-width: 180px;
+   margin: 4px auto 0;
+   display: grid;
+   justify-items: center;
+   gap: 8px;
+   text-align: center;
+}
+
+.practice-fighter-profile-location-copy {
+   margin: 0;
+   color: var(--practice-muted);
+   line-height: 1.35;
+}
+
+.practice-form-points-row {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 8px;
+}
+
+.practice-form-point {
+   width: 12px;
+   height: 12px;
+   border-radius: 50%;
+   border: 2px solid rgba(255, 255, 255, 0.92);
+   background: transparent;
+   box-shadow: inset 0 0 0 1px rgba(10, 16, 27, 0.25);
+}
+
+.practice-form-point.is-filled {
+   background: rgba(255, 255, 255, 0.92);
+}
+
+.practice-hit-point {
+   width: 22px;
+   height: 22px;
+   display: inline-block;
+   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+   border: 2px solid rgba(214, 239, 255, 0.98);
+   background: transparent;
+   box-sizing: border-box;
+   box-shadow: inset 0 0 0 1px rgba(10, 16, 27, 0.25);
+}
+
+.practice-hit-point.is-filled {
+   background: rgba(214, 239, 255, 0.98);
+}
+
+.practice-form-points-row.is-character-sheet-form-points {
+   gap: 6px;
+}
+
+.practice-form-knot {
+   width: 24px;
+   height: 24px;
+   object-fit: contain;
+   opacity: 0.26;
+   filter: grayscale(0.15) saturate(0.8);
+}
+
+.practice-form-knot.is-filled {
+   opacity: 1;
+   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.22));
+}
+
+.practice-fighter-profile-reputation .practice-fighter-profile-section-label {
+   text-align: center;
+}
+
+.practice-action-row {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 12px;
+   margin-top: 16px;
+}
+
+.practice-button {
+   border: 0;
+   border-radius: 999px;
+   padding: 13px 18px;
+   font: inherit;
+   font-weight: 700;
+   color: var(--practice-text);
+   background: rgba(255, 255, 255, 0.08);
+   cursor: pointer;
+   transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.practice-button:hover:not(:disabled) {
+   transform: translateY(-1px);
+   background: rgba(255, 255, 255, 0.14);
+}
+
+.practice-button:disabled {
+   opacity: 0.45;
+   cursor: not-allowed;
+}
+
+.practice-button-primary {
+   background: linear-gradient(135deg, #d7b372, #ab6a3f);
+   color: #11161f;
+}
+
+.practice-button-secondary {
+   background: linear-gradient(135deg, rgba(83, 121, 163, 0.82), rgba(60, 84, 116, 0.82));
+}
+
+.practice-turn-meta,
+.practice-roster-stats {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+   gap: 10px;
+   margin-top: 18px;
+}
+
+.practice-stat-pill {
+   padding: 12px;
+   border-radius: 16px;
+   background: rgba(255, 255, 255, 0.05);
+   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.practice-stat-pill strong {
+   display: block;
+   margin-top: 6px;
+   font-size: 1.05rem;
+}
+
+.practice-log {
+   margin: 14px 0 0;
+   padding-left: 18px;
+   line-height: 1.6;
+   flex: 1 1 auto;
+   min-height: 0;
+   max-height: 100%;
+   overflow-y: auto;
+   padding-right: 10px;
+}
+
+.practice-log-empty {
+   margin: 14px 0 0;
+   color: var(--practice-muted);
+}
+
+.practice-sidebar h2 {
+   margin: 8px 0 14px;
+   font-size: 1.35rem;
+}
+
+.practice-roster-stack {
+   display: grid;
+   gap: 28px;
+   min-width: 0;
+}
+
+.practice-roster-item {
+   will-change: transform;
+   cursor: pointer;
+   min-width: 0;
+}
+
+.practice-roster-item.is-selected .practice-roster-card:not(.is-active) {
+   box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.18),
+      0 0 22px rgba(215, 179, 114, 0.12);
+}
+
+.practice-roster-card {
+   padding: 12px;
+   border-radius: 18px;
+   border-left: 4px solid var(--accent);
+   width: 100%;
+   max-width: 100%;
+   box-sizing: border-box;
+   transform-origin: top center;
+   transition: transform 1000ms ease, box-shadow 1000ms ease, padding 1000ms ease, min-height 1000ms ease;
+}
+
+.practice-roster-card.is-active {
+   padding: 22px;
+   min-height: 344px;
+   box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.46),
+      0 0 64px rgba(133, 214, 255, 0.34),
+      0 0 24px rgba(255, 255, 255, 0.2),
+      0 24px 44px rgba(0, 0, 0, 0.26);
+}
+
+.practice-roster-card.is-winner {
+   background:
+      linear-gradient(135deg, rgba(215, 179, 114, 0.24), rgba(215, 179, 114, 0.08)),
+      var(--practice-panel-strong);
+}
+
+.practice-action-indicators {
+   display: grid;
+   justify-items: center;
+   gap: 10px;
+   margin-bottom: 18px;
+   min-width: 0;
+}
+
+.practice-active-turn-row {
+   display: grid;
+   grid-template-columns: 106px auto 106px;
+   justify-content: center;
+   align-items: start;
+   column-gap: 16px;
+   margin-top: 6px;
+   margin-bottom: 18px;
+}
+
+.practice-action-indicators-label {
+   margin: 0;
+   text-transform: uppercase;
+   letter-spacing: 0.18em;
+   font-size: 0.72rem;
+   color: var(--practice-gold);
+}
+
+.practice-action-indicators-row {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   gap: 8px;
+   flex-wrap: nowrap;
+   width: 44px;
+   min-height: 20px;
+   margin: 4px auto 0;
+   position: relative;
+   transition: opacity 100ms ease;
+}
+
+.practice-action-indicator {
+   width: 18px;
+   height: 18px;
+   padding: 0;
+   border-radius: 999px;
+   background: rgba(255, 255, 255, 0.96);
+   border: none;
+   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 4px 10px rgba(0, 0, 0, 0.14);
+}
+
+.practice-action-indicator.is-bonus {
+   background: #7ed7ff;
+   box-shadow:
+      0 0 0 1px rgba(150, 226, 255, 0.4),
+      0 0 12px rgba(126, 215, 255, 0.4),
+      0 4px 10px rgba(0, 0, 0, 0.14);
+}
+
+.practice-action-indicator-overlay {
+   position: absolute;
+   inset: 0;
+   pointer-events: none;
+}
+
+.practice-action-indicator.is-ghost {
+   position: absolute;
+   left: 50%;
+   top: 50%;
+   margin: 0;
+}
+
+.practice-roster-top,
+.practice-roster-title {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 8px;
+}
+
+.practice-roster-title {
+   justify-content: flex-start;
+}
+
+.practice-roster-title-stack {
+   display: grid;
+   gap: 2px;
+}
+
+.practice-roster-player-name,
+.practice-roster-city-name {
+   margin: 0;
+   line-height: 1.1;
+}
+
+.practice-roster-player-name {
+   font-size: 0.62rem;
+   letter-spacing: 0.16em;
+   color: var(--practice-muted);
+   text-transform: uppercase;
+}
+
+.practice-roster-city-name {
+   font-size: 1.55rem;
+   font-family: 'Cinzel', serif;
+   font-weight: 700;
+   letter-spacing: 0.03em;
+   color: #fff9ee;
+   text-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+   text-transform: none;
+}
+
+.practice-roster-corner {
+   display: flex;
+   align-items: center;
+   justify-content: flex-end;
+   gap: 6px;
+   margin-left: auto;
+}
+
+.practice-roster-status-face,
+.practice-roster-sigil {
+   width: 42px;
+   height: 42px;
+   object-fit: contain;
+   flex: 0 0 auto;
+   border-radius: 50%;
+   background: rgba(10, 16, 27, 0.35);
+   border: 1px solid rgba(255, 255, 255, 0.14);
+   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+}
+
+.practice-roster-status-face {
+   width: 30px;
+   height: 30px;
+   background: rgba(10, 16, 27, 0.18);
+}
+
+.practice-roster-corner .practice-sigil-wrap {
+   flex: 0 0 auto;
+}
+
+.practice-roster-corner .practice-siege-fire {
+   width: 58%;
+   height: 58%;
+}
+
+.practice-roster-card h3 {
+   margin: 0;
+   font-size: 1.02rem;
+}
+
+.practice-roster-title h3.is-dead::after {
+   left: -4px;
+   width: calc(100% + 8px);
+   height: 3px;
+}
+
+.practice-roster-title h3.is-dead {
+   position: relative;
+   color: #f1c1c1;
+   text-decoration: line-through;
+   text-decoration-color: rgba(188, 30, 30, 0.9);
+   text-decoration-thickness: 2px;
+}
+
+.practice-roster-title h3.is-dead::after {
+   content: "";
+   position: absolute;
+   left: -6px;
+   top: 50%;
+   width: calc(100% + 12px);
+   height: 4px;
+   border-radius: 999px;
+   background: linear-gradient(90deg, rgba(120, 0, 0, 0.1), rgba(214, 43, 43, 0.95), rgba(120, 0, 0, 0.1));
+   transform: translateY(-50%) rotate(-18deg);
+   box-shadow: 0 0 12px rgba(214, 43, 43, 0.4);
+   pointer-events: none;
+}
+
+.practice-roster-card.is-active .practice-roster-status-face,
+.practice-roster-card.is-active .practice-roster-sigil {
+   width: 70px;
+   height: 70px;
+}
+
+.practice-roster-card.is-active .practice-roster-status-face {
+   width: 52px;
+   height: 52px;
+}
+
+.practice-roster-card.is-active .practice-roster-corner .practice-siege-fire {
+   width: 60%;
+   height: 60%;
+}
+
+.practice-roster-card.is-active .practice-roster-title h3 {
+   font-size: 1.5rem;
+}
+
+.practice-roster-card.is-active .practice-roster-player-name,
+.practice-roster-card.is-active .practice-roster-city-name {
+   font-size: inherit;
+}
+
+.practice-roster-card.is-active .practice-roster-player-name {
+   font-size: 0.62rem;
+}
+
+.practice-roster-card.is-active .practice-roster-city-name {
+   font-size: 1.55rem;
+}
+
+.practice-roster-card.is-active .practice-action-indicators {
+   margin-top: 0;
+   margin-bottom: 0;
+}
+
+.practice-roster-card.is-active .practice-action-indicator {
+   width: 20px;
+   height: 20px;
+}
+
+.practice-roster-card.is-active .practice-roster-stats {
+   /* Active fighter stats must always stay on a single row. */
+   grid-template-columns: repeat(5, minmax(0, 1fr));
+   gap: 8px;
+   margin-top: 14px;
+}
+
+.practice-roster-card.is-active .practice-stat-pill {
+   min-height: 0;
+   padding: 8px 6px;
+   border-radius: 12px;
+}
+
+.practice-roster-card.is-active .practice-stat-pill strong {
+   margin-top: 4px;
+   font-size: 0.92rem;
+}
+
+.practice-roster-card.is-active .practice-roster-bar-wrap {
+   margin-top: 6px;
+}
+
+.practice-roster-stats {
+   grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+   gap: 8px;
+   margin-top: 10px;
+   justify-items: center;
+}
+
+.practice-roster-card:not(.is-active) .practice-roster-stats {
+   display: none;
+}
+
+.practice-stat-pill {
+   padding: 8px 9px;
+   border-radius: 12px;
+   min-height: 0;
+   width: 100%;
+   min-width: 0;
+   box-sizing: border-box;
+   overflow: hidden;
+   text-align: center;
+   justify-items: center;
+}
+
+.practice-stat-pill strong {
+   margin-top: 4px;
+   font-size: 0.94rem;
+}
+
+.practice-roster-bar-wrap {
+   margin-top: 10px;
+}
+
+.practice-roster-bar-label {
+   margin: 0 0 8px;
+   text-transform: uppercase;
+   letter-spacing: 0.18em;
+   font-size: 0.72rem;
+   color: var(--practice-gold);
+   text-align: center;
+}
+
+.practice-roster-bar-indicator {
+   position: relative;
+   padding-bottom: 9px;
+}
+
+.practice-roster-bar-pointer {
+   position: absolute;
+   bottom: 0;
+   left: calc(((var(--reputation-position) - 0.5) / 5) * 100%);
+   transform: translateX(-50%);
+   width: 0;
+   height: 0;
+   border-left: 8px solid transparent;
+   border-right: 8px solid transparent;
+   border-bottom: 11px solid rgba(255, 255, 255, 1);
+   filter:
+      drop-shadow(0 0 3px rgba(182, 232, 255, 0.9))
+      drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+   transition: left 1000ms ease;
+   z-index: 3;
+}
+
+.practice-roster-bar {
+   display: grid;
+   grid-template-columns: repeat(5, minmax(0, 1fr));
+   gap: 6px;
+   padding: 6px;
+   border: 1px solid rgba(255, 255, 255, 0.9);
+   border-radius: 999px;
+}
+
+.practice-roster-bar-segment {
+   display: block;
+   height: 10px;
+   border-radius: 999px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+.practice-roster-bar-segment.is-black {
+   background: linear-gradient(180deg, #5a5a5a, #111111);
+   border-color: rgba(255, 255, 255, 0.38);
+   box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.22),
+      0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.practice-roster-bar-segment.is-brown {
+   background: linear-gradient(180deg, #8a5a2b, #5f3816);
+}
+
+.practice-roster-bar-segment.is-gold {
+   background: linear-gradient(180deg, #f0d17a, #b98c2f);
+}
+
+.practice-player-actions {
+   display: grid;
+   grid-template-columns: repeat(5, minmax(0, 1fr));
+   justify-content: stretch;
+   column-gap: 10px;
+   row-gap: 8px;
+   margin-top: 16px;
+   align-items: start;
+   width: 100%;
+   min-width: 0;
+}
+
+.practice-turn-arrow-button {
+   display: grid;
+   place-items: center;
+   align-self: start;
+   width: 106px;
+   min-width: 0;
+   padding: 0;
+   background: transparent;
+   border: none;
+   color: var(--practice-text);
+   cursor: pointer;
+   transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.practice-turn-arrow-button.is-undo {
+   justify-self: end;
+   transform: translate(-32px, 4px);
+}
+
+.practice-turn-arrow-button.is-pass {
+   justify-self: start;
+   transform: translateY(4px);
+}
+
+.practice-turn-arrow-button:disabled {
+   opacity: 0.38;
+   cursor: not-allowed;
+}
+
+.practice-turn-arrow {
+   display: grid;
+   place-items: center;
+   width: 106px;
+   height: 32px;
+   padding: 0 12px;
+   font-family: 'Manrope', sans-serif;
+   text-transform: uppercase;
+   letter-spacing: 0.16em;
+   font-size: 0.56rem;
+   line-height: 1.1;
+   color: rgba(245, 248, 255, 0.96);
+   background: linear-gradient(180deg, rgba(103, 137, 185, 0.96), rgba(62, 90, 130, 0.92));
+   clip-path: polygon(0 0, 82% 0, 100% 50%, 82% 100%, 0 100%, 10% 50%);
+   box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+      0 10px 20px rgba(0, 0, 0, 0.22),
+      0 0 18px rgba(139, 191, 255, 0.2);
+   text-align: center;
+   white-space: nowrap;
+}
+
+.practice-turn-arrow-pass {
+   clip-path: polygon(0 0, 82% 0, 100% 50%, 82% 100%, 0 100%, 10% 50%);
+   padding-right: 18px;
+   padding-left: 12px;
+}
+
+.practice-turn-arrow-undo {
+   clip-path: polygon(18% 0, 100% 0, 90% 50%, 100% 100%, 18% 100%, 0 50%);
+   padding-left: 18px;
+   padding-right: 12px;
+}
+
+.practice-turn-arrow-button:not(:disabled):hover .practice-turn-arrow-pass,
+.practice-turn-arrow-button:not(:disabled):focus-visible .practice-turn-arrow-pass {
+   transform: translateX(2px);
+}
+
+.practice-turn-arrow-button:not(:disabled):hover .practice-turn-arrow-undo,
+.practice-turn-arrow-button:not(:disabled):focus-visible .practice-turn-arrow-undo {
+   transform: translateX(-2px);
+}
+
+.practice-player-action-group {
+   display: grid;
+   justify-items: center;
+   align-content: start;
+   gap: 4px;
+   width: 100%;
+   grid-template-rows: 42px minmax(18px, auto);
+   min-width: 0;
+}
+
+.practice-travel-buttons {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 38px));
+   align-items: center;
+   justify-content: center;
+   gap: 8px;
+   min-height: 38px;
+   width: 100%;
+   min-width: 0;
+}
+
+.practice-player-action-button {
+   display: grid;
+   justify-items: center;
+   align-items: start;
+   align-content: start;
+   grid-template-rows: 38px auto;
+   gap: 4px;
+   width: 100%;
+   min-width: 0;
+   padding: 0;
+   background: transparent;
+   border: none;
+   color: var(--practice-text);
+   cursor: pointer;
+   transition: opacity 220ms ease;
+}
+
+.practice-player-action-group .practice-player-action-button {
+   width: 38px;
+   justify-self: center;
+}
+
+.practice-player-action-button:disabled {
+   opacity: 0.38;
+   cursor: not-allowed;
+}
+
+.practice-player-action-button.is-save-school {
+   grid-template-columns: minmax(0, 1fr) auto;
+   align-items: center;
+   column-gap: 6px;
+   margin-top: 10px;
+}
+
+.practice-player-action-main {
+   display: grid;
+   justify-items: center;
+   grid-template-rows: 38px auto;
+   gap: 4px;
+   width: 100%;
+}
+
+.practice-save-school-pips {
+   display: grid;
+   gap: 5px;
+   justify-items: center;
+}
+
+.practice-save-school-pip {
+   width: 10px;
+   height: 10px;
+   border-radius: 50%;
+   border: 2px solid rgba(215, 179, 114, 0.72);
+   background: transparent;
+   box-shadow: inset 0 0 0 1px rgba(6, 10, 16, 0.28);
+   transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.practice-save-school-pip.is-filled {
+   background: #d7b372;
+   border-color: #f3d79c;
+   box-shadow: 0 0 10px rgba(215, 179, 114, 0.42);
+}
+
+.practice-player-action-button.is-save-school:disabled .practice-save-school-pip {
+   border-color: rgba(142, 152, 166, 0.6);
+   background: transparent;
+   box-shadow: inset 0 0 0 1px rgba(6, 10, 16, 0.22);
+}
+
+.practice-player-action-button.is-save-school:disabled .practice-save-school-pip.is-filled {
+   background: rgba(142, 152, 166, 0.55);
+   border-color: rgba(176, 184, 196, 0.65);
+   box-shadow: none;
+}
+
+.practice-player-action-shape {
+   display: block;
+   width: 36px;
+   height: 36px;
+   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(228, 232, 240, 0.92));
+   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+   position: relative;
+}
+
+.practice-player-action-shape.is-arrow-cw {
+   width: 42px;
+   height: 26px;
+   background-repeat: no-repeat;
+   background-size: 100% 200%;
+   background-position: center bottom;
+   box-shadow: none;
+   filter: brightness(0) saturate(100%) invert(69%) sepia(40%) saturate(775%) hue-rotate(86deg) brightness(92%) contrast(89%);
+   transform: rotate(90deg);
+}
+
+.practice-player-action-shape.is-arrow-ccw {
+   width: 42px;
+   height: 26px;
+   background-repeat: no-repeat;
+   background-size: 100% 200%;
+   background-position: center top;
+   box-shadow: none;
+   filter: brightness(0) saturate(100%) invert(69%) sepia(40%) saturate(775%) hue-rotate(86deg) brightness(92%) contrast(89%);
+   transform: rotate(90deg) scaleX(-1);
+}
+
+.practice-player-action-shape.is-quest {
+   clip-path: polygon(18% 0, 82% 0, 100% 22%, 100% 78%, 82% 100%, 18% 100%, 0 78%, 0 22%);
+}
+
+.practice-player-action-shape.is-quest.is-image-quest {
+   width: 38px;
+   height: 38px;
+   background-repeat: no-repeat;
+   background-size: contain;
+   background-position: center;
+   background-color: transparent;
+   clip-path: none;
+   box-shadow: none;
+}
+
+.practice-player-action-shape.is-fight {
+   clip-path: polygon(50% 0, 63% 22%, 88% 12%, 78% 37%, 100% 50%, 78% 63%, 88% 88%, 63% 78%, 50% 100%, 37% 78%, 12% 88%, 22% 63%, 0 50%, 22% 37%, 12% 12%, 37% 22%);
+}
+
+.practice-player-action-shape.is-heal {
+   width: 38px;
+   height: 38px;
+   background-repeat: no-repeat;
+   background-size: contain;
+   background-position: center;
+   background-color: transparent;
+   clip-path: none;
+   box-shadow: none;
+}
+
+.practice-player-action-shape.is-heal.is-image-heal {
+   clip-path: none;
+}
+
+.practice-player-action-shape.is-school {
+   clip-path: polygon(50% 0, 100% 28%, 88% 28%, 88% 100%, 12% 100%, 12% 28%, 0 28%);
+}
+
+.practice-player-action-shape.is-defend {
+   width: 38px;
+   height: 38px;
+   background: none;
+   background-color: transparent;
+   box-shadow: none;
+   isolation: isolate;
+}
+
+.practice-player-action-shape.is-defend.is-image-defend::before {
+   content: "";
+   position: absolute;
+   left: calc(50% + 7px);
+   top: -13px;
+   width: 24px;
+   height: 24px;
+   transform: translateX(-50%);
+   background-image: var(--defend-fire-icon);
+   background-repeat: no-repeat;
+   background-size: contain;
+   background-position: center;
+   z-index: 0;
+   filter: drop-shadow(0 1px 2px rgba(255, 157, 51, 0.35));
+}
+
+.practice-player-action-shape.is-defend.is-image-defend::after {
+   content: "";
+   position: absolute;
+   inset: 0;
+   background-image: var(--defend-icon);
+   background-repeat: no-repeat;
+   background-size: contain;
+   background-position: center;
+   z-index: 1;
+}
+
+.practice-player-action-text {
+   display: flex;
+   align-items: flex-start;
+   justify-content: center;
+   font-family: 'Manrope', sans-serif;
+   font-size: 0.56rem;
+   line-height: 1.1;
+   text-transform: uppercase;
+   letter-spacing: 0.16em;
+   min-height: 18px;
+   margin: 0;
+   transform: translateY(6px);
+   text-align: center;
+   text-wrap: balance;
+   max-width: 100%;
+}
+
+.practice-player-action-group.is-travel-group .practice-player-action-text {
+   transform: translateY(8px);
+}
+
+.practice-effects-grid {
+   display: grid;
+   gap: 12px;
+}
+
+.practice-effect-card {
+   border-top: 3px solid var(--accent);
+}
+
+.practice-modal-backdrop {
+   position: fixed;
+   inset: 0;
+   z-index: 40;
+   display: grid;
+   place-items: center;
+   padding: 28px;
+   background: rgba(4, 8, 18, 0.82);
+   backdrop-filter: blur(12px);
+   opacity: 1;
+   transition: opacity 1000ms ease;
+}
+
+.practice-modal-backdrop.is-closing {
+   opacity: 0;
+   pointer-events: none;
+}
+
+.practice-modal {
+   width: min(1100px, 100%);
+   padding: 28px 32px 36px;
+   border: 1px solid rgba(227, 213, 188, 0.22);
+   border-radius: 30px;
+   background:
+      linear-gradient(180deg, rgba(7, 11, 19, 0.5), rgba(8, 12, 22, 0.78)),
+      radial-gradient(circle at top, rgba(214, 181, 108, 0.22), transparent 42%),
+      var(--modal-background-image) center / cover no-repeat;
+   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.practice-modal-kicker {
+   margin: 0 0 10px;
+   color: #f1db9e;
+   font-size: 0.78rem;
+   letter-spacing: 0.24em;
+   text-transform: uppercase;
+   text-align: center;
+   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+}
+
+.practice-modal h2 {
+   margin: 0;
+   text-align: center;
+   font-size: clamp(2rem, 4vw, 2.75rem);
+   color: #fff9ee;
+   text-shadow:
+      0 3px 14px rgba(0, 0, 0, 0.95),
+      0 0 24px rgba(0, 0, 0, 0.45);
+}
+
+.practice-combat-backdrop {
+   z-index: 60;
+   background: rgba(3, 7, 16, 0.9);
+}
+
+.practice-combat-modal {
+   width: min(1280px, 100%);
+   background:
+      linear-gradient(180deg, rgba(7, 11, 19, 0.94), rgba(8, 12, 22, 0.97)),
+      radial-gradient(circle at top, rgba(214, 181, 108, 0.18), transparent 42%);
+}
+
+.practice-combat-phase-strip {
+   display: grid;
+   grid-template-columns: repeat(5, minmax(0, 1fr));
+   gap: 10px;
+   margin-top: 22px;
+}
+
+.practice-combat-phase-chip {
+   display: grid;
+   gap: 4px;
+   padding: 10px 12px;
+   border-radius: 14px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   background: rgba(255, 255, 255, 0.03);
+   opacity: 0.7;
+}
+
+.practice-combat-phase-chip.is-active {
+   border-color: rgba(215, 179, 114, 0.72);
+   background: rgba(215, 179, 114, 0.12);
+   opacity: 1;
+}
+
+.practice-combat-phase-chip.is-complete {
+   opacity: 0.92;
+}
+
+.practice-combat-phase-count,
+.practice-combat-phase-name,
+.practice-combat-phase-label,
+.practice-combatant-kicker,
+.practice-combatant-resource-label,
+.practice-combat-placeholder-label {
+   text-transform: uppercase;
+   letter-spacing: 0.14em;
+}
+
+.practice-combat-phase-count,
+.practice-combat-phase-label,
+.practice-combatant-kicker,
+.practice-combatant-resource-label,
+.practice-combat-placeholder-label {
+   font-size: 0.68rem;
+   color: var(--practice-gold);
+}
+
+.practice-combat-phase-name {
+   font-size: 0.72rem;
+   line-height: 1.35;
+   color: #dce4f5;
+}
+
+.practice-combat-grid {
+   display: grid;
+   grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.2fr) minmax(220px, 0.72fr);
+   gap: 18px;
+   align-items: start;
+   margin-top: 22px;
+}
+
+.practice-combatant-card,
+.practice-combat-phase-panel {
+   border-radius: 22px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   background: rgba(255, 255, 255, 0.04);
+   padding: 18px;
+   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.practice-combatant-card h3,
+.practice-combat-phase-panel h3 {
+   margin: 6px 0 0;
+}
+
+.practice-combatant-resource-grid {
+   display: grid;
+   gap: 14px;
+   margin-top: 16px;
+}
+
+.practice-combatant-resource {
+   display: grid;
+   gap: 8px;
+}
+
+.practice-combatant-resource-label,
+.practice-combat-placeholder-label {
+   margin: 0;
+}
+
+.practice-combatant-card .practice-form-points-row {
+   justify-content: flex-start;
+}
+
+.practice-combat-phase-copy {
+   margin: 12px 0 0;
+   color: var(--practice-muted);
+   line-height: 1.6;
+}
+
+.practice-combat-selection-grid,
+.practice-combat-reveal-grid {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: 12px;
+   margin-top: 18px;
+}
+
+.practice-combat-selection-column {
+   display: grid;
+   gap: 12px;
+}
+
+.practice-combat-hand-grid,
+.practice-combat-mode-grid {
+   display: grid;
+   gap: 10px;
+}
+
+.practice-combat-card-button,
+.practice-combat-mode-button {
+   display: grid;
+   gap: 6px;
+   justify-items: stretch;
+   padding: 0;
+   border-radius: 18px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   background: transparent;
+   color: var(--practice-text);
+   text-align: left;
+   cursor: pointer;
+   overflow: hidden;
+}
+
+.practice-combat-card-button.is-selected,
+.practice-combat-mode-button.is-selected {
+   border-color: rgba(215, 179, 114, 0.72);
+   background: rgba(215, 179, 114, 0.12);
+}
+
+.practice-combat-card-button:disabled,
+.practice-combat-mode-button:disabled {
+   opacity: 0.4;
+   cursor: not-allowed;
+}
+
+.practice-combat-card-face {
+   display: grid;
+   gap: 14px;
+   min-height: 210px;
+   padding: 16px;
+   border-radius: 18px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   background:
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 34%),
+      linear-gradient(180deg, rgba(44, 34, 20, 0.95), rgba(20, 15, 10, 0.98));
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 16px 28px rgba(0, 0, 0, 0.2);
+}
+
+.practice-combat-card-face.is-button-face {
+   min-height: 100%;
+}
+
+.practice-combat-card-face.is-selected,
+.practice-combat-card-button.is-selected .practice-combat-card-face {
+   border-color: rgba(215, 179, 114, 0.72);
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 0 1px rgba(215, 179, 114, 0.24),
+      0 16px 28px rgba(0, 0, 0, 0.2);
+}
+
+.practice-combat-card-face.is-special {
+   background:
+      radial-gradient(circle at top, rgba(215, 179, 114, 0.28), transparent 36%),
+      linear-gradient(180deg, rgba(72, 54, 24, 0.96), rgba(29, 20, 10, 0.98));
+}
+
+.practice-combat-card-face.is-keyword-active {
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 0 1px rgba(126, 215, 255, 0.18),
+      0 16px 28px rgba(0, 0, 0, 0.2);
+}
+
+.practice-combat-card-header,
+.practice-combat-card-footer {
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-start;
+   gap: 12px;
+}
+
+.practice-combat-card-title-block,
+.practice-combat-card-lane-block {
+   display: grid;
+   gap: 6px;
+}
+
+.practice-combat-card-eyebrow,
+.practice-combat-card-lane-label {
+   margin: 0;
+   font-size: 0.7rem;
+   letter-spacing: 0.14em;
+   text-transform: uppercase;
+   color: rgba(244, 239, 227, 0.62);
+}
+
+.practice-combat-card-name {
+   font-size: 1rem;
+   line-height: 1.2;
+}
+
+.practice-combat-card-swap-badge,
+.practice-combat-card-keyword {
+   padding: 7px 10px;
+   border-radius: 999px;
+   background: rgba(255, 255, 255, 0.08);
+   color: var(--practice-text);
+   font-size: 0.76rem;
+   line-height: 1.2;
+   white-space: nowrap;
+}
+
+.practice-combat-card-lane-grid {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: 12px;
+}
+
+.practice-combat-card-lane-row {
+   display: flex;
+   gap: 8px;
+}
+
+.practice-combat-card-lane {
+   width: 34px;
+   height: 42px;
+   display: grid;
+   place-items: center;
+   border-radius: 8px;
+   border: 1px solid rgba(255, 255, 255, 0.12);
+   background: rgba(255, 255, 255, 0.04);
+   color: rgba(244, 239, 227, 0.42);
+   font-size: 0.8rem;
+   font-weight: 700;
+}
+
+.practice-combat-card-lane.attack.is-filled {
+   background: linear-gradient(180deg, rgba(207, 76, 84, 0.98), rgba(123, 33, 40, 0.95));
+   color: #fff4ed;
+   border-color: rgba(255, 255, 255, 0.18);
+}
+
+.practice-combat-card-lane.defense.is-filled {
+   background: linear-gradient(180deg, rgba(105, 125, 156, 0.98), rgba(48, 63, 84, 0.95));
+   color: #f6fbff;
+   border-color: rgba(255, 255, 255, 0.18);
+}
+
+.practice-combat-card-footer {
+   align-items: center;
+}
+
+.practice-combat-card-title {
+   font-weight: 700;
+}
+
+.practice-combat-card-copy,
+.practice-combat-mode-button span {
+   color: var(--practice-muted);
+   line-height: 1.45;
+}
+
+.practice-combat-placeholder-grid {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: 12px;
+   margin-top: 18px;
+}
+
+.practice-combat-placeholder-card {
+   min-height: 144px;
+   display: grid;
+   gap: 12px;
+   border-radius: 18px;
+   border: 1px dashed rgba(215, 179, 114, 0.4);
+   background: rgba(255, 255, 255, 0.02);
+   padding: 16px;
+}
+
+.practice-combat-placeholder-card p:last-child {
+   margin: 8px 0 0;
+   color: var(--practice-muted);
+   line-height: 1.55;
+}
+
+.practice-combat-actions {
+   display: flex;
+   justify-content: space-between;
+   gap: 12px;
+   margin-top: 20px;
+}
+
+.practice-combat-button {
+   min-width: 160px;
+   padding: 12px 18px;
+   border-radius: 999px;
+   border: 1px solid rgba(255, 255, 255, 0.12);
+   background: rgba(255, 255, 255, 0.06);
+   color: var(--practice-text);
+   font: inherit;
+   cursor: pointer;
+}
+
+.practice-combat-button.is-primary {
+   border-color: rgba(215, 179, 114, 0.48);
+   background: linear-gradient(180deg, rgba(215, 179, 114, 0.24), rgba(132, 96, 29, 0.38));
+}
+
+.practice-combat-button.is-secondary {
+   background: rgba(255, 255, 255, 0.04);
+}
+
+.practice-challenge-modal {
+   width: min(560px, calc(100% - 32px));
+   padding: 20px 22px 24px;
+   border-radius: 24px;
+   text-align: center;
+}
+
+.practice-challenge-modal h2 {
+   font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.practice-challenge-modal .practice-modal-kicker {
+   text-align: center;
+}
+
+.practice-challenge-modal .practice-combat-phase-copy {
+   margin-top: 10px;
+   line-height: 1.5;
+   text-align: center;
+}
+
+.practice-challenge-modal .practice-combat-actions {
+   justify-content: center;
+   margin-top: 16px;
+ }
+
+.practice-challenge-modal .practice-combat-button {
+   min-width: 140px;
+   padding: 10px 16px;
+   background: transparent;
+}
+
+.practice-challenge-modal .practice-combat-button.is-accept {
+   border-color: rgba(88, 184, 112, 0.95);
+   color: #d9f7de;
+   box-shadow: inset 0 0 0 1px rgba(88, 184, 112, 0.22);
+}
+
+.practice-challenge-modal .practice-combat-button.is-decline {
+   border-color: rgba(208, 86, 86, 0.95);
+   color: #ffd7d7;
+   box-shadow: inset 0 0 0 1px rgba(208, 86, 86, 0.2);
+}
+
+.practice-challenge-options {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+   gap: 10px;
+   margin-top: 14px;
+}
+
+.practice-challenge-option {
+   display: grid;
+   gap: 6px;
+   justify-items: center;
+   padding: 12px;
+   border-radius: 16px;
+   border: 1px solid rgba(215, 179, 114, 0.28);
+   background: rgba(255, 255, 255, 0.04);
+   color: var(--practice-text);
+   text-align: center;
+   cursor: pointer;
+}
+
+.practice-challenge-option .practice-combatant-kicker {
+   font-size: 0.62rem;
+}
+
+.practice-challenge-option strong {
+   font-size: 1rem;
+}
+
+.practice-challenge-option span {
+   font-size: 0.84rem;
+   color: var(--practice-muted);
+}
+
+.practice-challenge-option strong,
+.practice-challenge-option span {
+   line-height: 1.35;
+}
+
+.practice-modal-star {
+   position: relative;
+   width: min(100%, 960px);
+   aspect-ratio: 1 / 1;
+   margin: 28px auto 0;
+}
+
+.practice-hometown-option {
+   position: absolute;
+   width: min(188px, 20vw);
+   min-height: 172px;
+   padding: 12px 14px 16px;
+   border: 1px solid rgba(227, 213, 188, 0.18);
+   border-radius: 24px;
+   background: linear-gradient(180deg, rgba(29, 40, 66, 0.96), rgba(16, 24, 43, 0.96));
+   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+   color: inherit;
+   text-align: center;
+   transform: translate(-50%, -50%);
+   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+   cursor: pointer;
+}
+
+.practice-hometown-option:hover,
+.practice-hometown-option:focus-visible {
+   transform: translate(-50%, -50%) scale(1.08) translateY(-6px);
+   border-color: color-mix(in srgb, var(--hometown-accent) 70%, rgba(227, 213, 188, 0.45));
+   background: linear-gradient(180deg, rgba(42, 57, 92, 0.98), rgba(18, 28, 49, 0.98));
+   box-shadow:
+      0 26px 58px rgba(0, 0, 0, 0.5),
+      0 0 26px color-mix(in srgb, var(--hometown-accent) 24%, transparent);
+   outline: none;
+}
+
+.practice-hometown-option-sigil {
+   width: 62px;
+   height: 62px;
+   margin: 0 auto 8px;
+   object-fit: contain;
+}
+
+.practice-hometown-option-city {
+   margin: 0;
+   color: var(--text);
+   font-size: 1.02rem;
+   font-weight: 700;
+   letter-spacing: 0.05em;
+   text-transform: uppercase;
+   font-family: "New Rocker", serif;
+}
+
+.practice-hometown-option-nickname {
+   margin: 6px 0 0;
+   color: var(--muted);
+   font-size: 0.72rem;
+   letter-spacing: 0.08em;
+}
+
+.practice-hometown-option-school,
+.practice-hometown-option-style,
+.practice-hometown-option-keyword {
+   margin: 6px 0 0;
+   color: #cfd6e7;
+   font-size: 0.8rem;
+   line-height: 1.3;
+}
+
+.practice-hometown-option-style,
+.practice-hometown-option-keyword {
+   font-size: 0.73rem;
+}
+
+.practice-hometown-option-school.is-compact {
+   font-size: 0.69rem;
+   letter-spacing: -0.01em;
+   white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+   .practice-modal {
+      padding-inline: 18px;
+   }
+
+   .practice-combat-grid {
+      grid-template-columns: 1fr;
+   }
+
+   .practice-combat-placeholder-grid {
+      grid-template-columns: 1fr;
+   }
+
+   .practice-combat-selection-grid,
+   .practice-combat-reveal-grid {
+      grid-template-columns: 1fr;
+   }
+
+   .practice-combat-actions {
+      flex-direction: column;
+   }
+
+   .practice-modal-star {
+      aspect-ratio: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+   }
+
+   .practice-hometown-option {
+      position: relative;
+      left: auto !important;
+      top: auto !important;
+      width: 100%;
+      transform: none;
+   }
+
+   .practice-hometown-option:hover,
+   .practice-hometown-option:focus-visible {
+      transform: translateY(-3px);
+   }
+}
+
+@media (max-width: 1100px) {
+   .practice-shell {
+      display: block;
+      min-height: 0;
+      height: auto;
+      overflow: visible;
+   }
+
+   .practice-layout {
+      grid-template-columns: 1fr;
+   }
+}
+
+@media (max-width: 860px) {
+   .practice-shell {
+      width: min(100% - 20px, 1320px);
+      padding-top: 24px;
+   }
+
+   .practice-fighter-profile-top {
+      grid-template-columns: minmax(0, 1fr) 108px 100px;
+      gap: 12px;
+   }
+
+   .practice-fighter-profile-city-name {
+      left: -18px;
+      font-size: 1.12rem;
+   }
+
+   .practice-fighter-profile-style {
+      width: 108px;
+      min-height: 82px;
+      padding: 7px 4px;
+   }
+
+   .practice-fighter-profile-sigil-block {
+      width: 100px;
+      min-height: 104px;
+      padding-left: 6px;
+   }
+
+   .practice-board-panel,
+   .practice-sidebar {
+      padding: 16px;
+      border-radius: 22px;
+   }
+
+   .practice-board {
+      aspect-ratio: auto;
+      min-height: 560px;
+   }
+
+   .practice-node {
+      width: 84px;
+      height: 84px;
+      transform:
+         rotate(var(--angle))
+         translateY(-225px)
+         rotate(calc(var(--angle) * -1))
+         translate(-50%, -50%);
+   }
+
+   .practice-node-town {
+      width: 102px;
+      height: 102px;
+   }
+
+   .practice-node-core {
+      min-height: 74px;
+      padding: 14px 10px;
+      font-size: 0.82rem;
+   }
+
+   .practice-node-road .practice-node-core {
+      width: 54px;
+      min-height: 30px;
+      font-size: 0.75rem;
+   }
+
+   .practice-node-sigil {
+      width: 52px;
+      height: 52px;
+      margin-top: 0;
+   }
+
+   .practice-node-label {
+      margin-top: -10px;
+      font-size: 0.8rem;
+   }
+
+   .practice-centerpiece {
+      width: 154px;
+      height: 154px;
+      margin: -77px 0 0 -77px;
+      padding: 18px;
+   }
+
+   .practice-controls {
+      grid-template-columns: 1fr;
+   }
+}
+
+@media (max-width: 560px) {
+   .practice-fighter-profile-top {
+      grid-template-columns: minmax(0, 1fr) 100px 90px;
+      gap: 10px;
+   }
+
+   .practice-fighter-profile-city-name {
+      left: -13px;
+      font-size: 0.9rem;
+   }
+
+   .practice-fighter-profile-school-line {
+      font-size: 0.78rem;
+   }
+
+   .practice-fighter-profile-style {
+      width: 100px;
+      min-height: 78px;
+      padding: 6px 4px;
+   }
+
+   .practice-fighter-profile-style-line {
+      font-size: 0.7rem;
+   }
+
+   .practice-fighter-profile-sigil-block {
+      width: 90px;
+      min-height: 98px;
+      padding-left: 4px;
+   }
+
+   .practice-fighter-profile-sigil {
+      width: 56px;
+      height: 56px;
+   }
+
+   .practice-fighter-profile-nickname {
+      font-size: 0.56rem;
+   }
+
+   .practice-board {
+      min-height: 460px;
+   }
+
+   .practice-node {
+      width: 68px;
+      height: 68px;
+      transform:
+         rotate(var(--angle))
+         translateY(-185px)
+         rotate(calc(var(--angle) * -1))
+         translate(-50%, -50%);
+   }
+
+   .practice-node-town {
+      width: 88px;
+      height: 88px;
+   }
+
+   .practice-node-core {
+      min-height: 66px;
+      padding: 12px 10px;
+      font-size: 0.68rem;
+   }
+
+   .practice-node-road .practice-node-core {
+      width: 52px;
+      min-height: 30px;
+      font-size: 0.63rem;
+   }
+
+   .practice-node-sigil {
+      width: 48px;
+      height: 48px;
+      margin-top: -2px;
+   }
+
+   .practice-node-label {
+      margin-top: -13px;
+      font-size: 0.74rem;
+   }
+
+   .practice-node-occupants {
+      gap: 4px;
+      padding: 4px 8px;
+   }
+
+   .practice-centerpiece {
+      width: 136px;
+      height: 136px;
+      margin: -68px 0 0 -68px;
+   }
+
+.practice-centerpiece strong {
+   font-size: 0.92rem;
+}
+}

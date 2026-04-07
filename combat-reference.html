@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combat Reference</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Cinzel:wght@700;800&family=Julius+Sans+One&family=Lugrasimo&family=Major+Mono+Display&family=Manrope:wght@400;500;700&family=New+Rocker&family=Rancho&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1422;
+            --panel: rgba(19, 28, 46, 0.9);
+            --panel-strong: rgba(25, 36, 58, 0.96);
+            --text: #f4efe3;
+            --muted: #b8c3d7;
+            --accent: #d7b372;
+            --line: rgba(255, 255, 255, 0.1);
+            --red: #ce584f;
+            --gray: #737b8b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top, rgba(215, 179, 114, 0.16), transparent 28%),
+                linear-gradient(180deg, #111a2b, #08101c 72%);
+        }
+
+        main {
+            width: min(1100px, calc(100% - 32px));
+            margin: 32px auto;
+            display: grid;
+            gap: 20px;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            background: var(--panel);
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+            padding: 24px;
+        }
+
+        h1, h2, h3, p {
+            margin: 0;
+        }
+
+        .kicker,
+        .label {
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+
+        .hero {
+            display: grid;
+            gap: 8px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+        }
+
+        .hero p:last-child {
+            max-width: 70ch;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+            gap: 20px;
+        }
+
+        .card-preview {
+            background: linear-gradient(180deg, #baaf7d, #8d7448);
+            color: #241c10;
+        }
+
+        .card-shell {
+            border: 4px solid rgba(35, 26, 13, 0.8);
+            background: rgba(245, 230, 179, 0.55);
+            border-radius: 8px;
+            padding: 0 18px 18px;
+            display: grid;
+            justify-items: center;
+            gap: 18px;
+            width: min(100%, 360px);
+            min-height: 360px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .array-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: -10px;
+        }
+
+        .array-block {
+            display: grid;
+            gap: 10px;
+            flex: 1 1 0;
+        }
+
+        .array-block:last-child {
+            justify-items: end;
+        }
+
+        .array-slots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .slot {
+            width: 34px;
+            height: 42px;
+            border-radius: 6px;
+            display: grid;
+            place-items: center;
+            font-family: "Manrope", Arial, sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            border: 2px solid rgba(0, 0, 0, 0.35);
+        }
+
+        .slot.attack {
+            background: var(--red);
+            color: #2d0d08;
+        }
+
+        .slot.defense {
+            background: #161616;
+            color: #f4f7fb;
+        }
+
+        .deck-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+            gap: 10px;
+        }
+
+        .deck-card {
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 12px;
+            display: grid;
+            gap: 6px;
+        }
+
+        .deck-card strong {
+            color: var(--text);
+        }
+
+        .deck-card p {
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .deck-gallery {
+            display: grid;
+            gap: 16px;
+        }
+
+        .deck-sheet {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--line);
+        }
+
+        .deck-sheet h3 {
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .deck-sheet p {
+            text-align: center;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .reference-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 196px);
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .reference-mini-card {
+            border: 3px solid rgba(35, 26, 13, 0.82);
+            border-radius: 10px;
+            background:
+                radial-gradient(circle at 70% 20%, rgba(255, 244, 194, 0.55), transparent 32%),
+                linear-gradient(180deg, #c1a76f, #8f7344);
+            color: #241c10;
+            padding: 0 14px 14px;
+            display: grid;
+            gap: 10px;
+            min-height: 250px;
+            width: 196px;
+            overflow: hidden;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+        }
+
+        .reference-mini-card.is-special {
+            box-shadow:
+                0 10px 22px rgba(0, 0, 0, 0.18),
+                0 0 0 1px rgba(215, 179, 114, 0.55);
+        }
+
+        .reference-mini-header {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: -8px;
+            width: 100%;
+            max-width: 156px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .reference-mini-array {
+            display: grid;
+            gap: 6px;
+            flex: 1 1 0;
+        }
+
+        .reference-mini-array:last-child {
+            justify-items: start;
+        }
+
+        .reference-mini-slots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .reference-mini-slot {
+            width: 24px;
+            height: 30px;
+            border-radius: 4px;
+            display: grid;
+            place-items: center;
+            font-family: "Manrope", Arial, sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            opacity: 0.28;
+            border: 1px solid rgba(0, 0, 0, 0.72);
+        }
+
+        .reference-mini-slot.attack {
+            background: rgba(206, 88, 79, 0.08);
+        }
+
+        .reference-mini-slot.attack.is-filled {
+            background: #ce584f;
+            opacity: 1;
+        }
+
+        .reference-mini-slot.defense {
+            background: rgba(22, 22, 22, 0.08);
+            color: #f4f7fb;
+        }
+
+        .reference-mini-slot.defense.is-filled {
+            background: #161616;
+            opacity: 1;
+        }
+
+        .reference-mini-body {
+            display: grid;
+            gap: 6px;
+            align-content: start;
+            text-align: center;
+            width: 100%;
+            max-width: 156px;
+            margin: 0 auto;
+        }
+
+        .reference-mini-name-row {
+            width: 100%;
+            max-width: 156px;
+            margin: -2px auto 0;
+            text-align: center;
+        }
+
+        .reference-mini-keyword-row {
+            width: 100%;
+            max-width: 156px;
+            margin: -2px auto 0;
+        }
+
+        .reference-mini-name {
+            font-size: 0.54rem;
+            font-weight: 700;
+            font-family: "Manrope", Arial, sans-serif !important;
+            letter-spacing: 0.08em;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .reference-mini-modes {
+            display: grid;
+            gap: 6px;
+            margin-top: auto;
+            width: 100%;
+            max-width: 156px;
+            margin-left: auto;
+            margin-right: auto;
+            align-items: end;
+        }
+
+        .reference-mini-mode {
+            position: relative;
+            border: 1px solid rgba(31, 23, 12, 0.34);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 7px 10px;
+            text-align: center;
+            font-size: 0.69rem;
+            line-height: 1.3;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .reference-mini-mode.has-cost {
+            width: calc(100% - 44px);
+            margin-left: auto;
+        }
+
+        .reference-mini-mode.has-keyword {
+            text-transform: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        .reference-mini-mode.is-baked-keyword {
+            border: none;
+            background: transparent;
+            padding: 2px 0 4px;
+            width: 100%;
+            text-align: center;
+            box-shadow: none;
+        }
+
+        .reference-mini-mode strong {
+            display: block;
+            width: 100%;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .reference-mini-cost-icon {
+            position: absolute;
+            left: -44px;
+            top: 50%;
+            width: 24px;
+            height: 24px;
+            transform: translateY(-50%);
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+        }
+
+        .reference-mini-mode strong.is-keyword-reversal {
+            font-family: "Rancho", cursive;
+            font-size: 1.18rem;
+            color: #2f7c9e;
+        }
+
+        .reference-mini-mode strong.is-keyword-overwhelm {
+            font-family: "Julius Sans One", sans-serif;
+            font-size: 0.92rem;
+            color: #2f7046;
+        }
+
+        .reference-mini-mode strong.is-keyword-flurry {
+            font-family: "ZCOOL XiaoWei", serif;
+            font-size: 1.06rem;
+            color: #973840;
+        }
+
+        .reference-mini-mode strong.is-keyword-endure {
+            font-family: "New Rocker", serif;
+            font-weight: 400;
+            font-size: 1.02rem;
+            color: #66717d;
+        }
+
+        .reference-mini-mode strong.is-keyword-stumble {
+            font-family: "Berkshire Swash", cursive;
+            font-weight: 400;
+            font-size: 1.08rem;
+            color: #7754ac;
+        }
+
+        .reference-mini-dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .reference-mini-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(31, 23, 12, 0.55);
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .reference-mini-dot.attack.is-filled {
+            background: #ce584f;
+        }
+
+        .reference-mini-dot.defense.is-filled {
+            background: #161616;
+        }
+
+        .modes {
+            display: grid;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .mode {
+            display: grid;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(31, 23, 12, 0.35);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .mode-label {
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+        }
+
+        .notes {
+            display: grid;
+            gap: 16px;
+        }
+
+        .section {
+            display: grid;
+            gap: 10px;
+            padding: 16px;
+            border-radius: 18px;
+            background: var(--panel-strong);
+            border: 1px solid var(--line);
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .todo {
+            color: #f0d9ab;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="panel hero">
+            <p class="kicker">Live Reference</p>
+            <h1>Combat Card Working Spec</h1>
+            <p>This page is a permanent place for the evolving combat-card design while we implement the clash system. Keep it open in Live Server beside the main game and we can update it as rules solidify.</p>
+        </section>
+
+        <section class="layout">
+            <article class="panel card-preview">
+                <div class="card-shell">
+                    <div class="array-row">
+                        <div class="array-block">
+                            <div class="array-slots">
+                                <div class="slot attack">H</div>
+                                <div class="slot attack">M</div>
+                                <div class="slot attack">L</div>
+                            </div>
+                        </div>
+                        <div class="array-block">
+                            <div class="array-slots">
+                                <div class="slot defense">L</div>
+                                <div class="slot defense">M</div>
+                                <div class="slot defense">H</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modes">
+                        <div class="mode">
+                            <div class="mode-label">School Special</div>
+                        </div>
+                        <div class="mode">
+                            <div class="mode-label">Swap Attack</div>
+                        </div>
+                        <div class="mode">
+                            <div class="mode-label">Swap Defense</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <div class="notes">
+                <section class="section">
+                    <p class="label">Clash Rules</p>
+                    <ul>
+                        <li>Combat takes place in a dedicated modal above the map and roster page.</li>
+                        <li>Each clash has five phases: Selection, Reveal, Reaction, Calculation, Activation.</li>
+                        <li>Each card has one printed attack lane and one printed defense lane.</li>
+                        <li>If an attack lane matches a defense lane, that strike is blocked.</li>
+                        <li>If it does not match, the defender loses 1 Hit Point.</li>
+                        <li>At 0 Hit Points, that fighter loses, becomes Injured, loses 1 Reputation, and returns to the main game.</li>
+                        <li>Hit Points and Form Points reset after the fight ends.</li>
+                    </ul>
+                </section>
+
+                <section class="section">
+                    <p class="label">Modes</p>
+                    <ul>
+                        <li><strong>School Special</strong>: use the fighter keyword on that clash. Cost: 1 Form Point.</li>
+                        <li><strong>Swap Attack</strong>: replace the printed attack lane with the card's swap lane. Cost: 1 Form Point.</li>
+                        <li><strong>Swap Defense</strong>: replace the printed defense lane with the card's swap lane. Cost: 1 Form Point.</li>
+                        <li>The special 10th card matches the live app: keyword active for 0 cost, or pay 1 Form Point for one swap.</li>
+                    </ul>
+                </section>
+
+                <section class="section">
+                    <p class="label">All Five Decks</p>
+                    <div id="deck-gallery" class="deck-gallery"></div>
+                </section>
+
+                <section class="section">
+                    <p class="label">Shared Pattern</p>
+                    <div id="shared-pattern-grid" class="deck-grid"></div>
+                </section>
+
+                <section class="section">
+                    <p class="label">Keywords</p>
+                    <ul id="keywords-list"></ul>
+                </section>
+
+                <section class="section">
+                    <p class="label">Deck Flow</p>
+                    <ul>
+                        <li>At combat start, each fighter draws 5 cards.</li>
+                        <li>Clashes can only use cards currently in hand.</li>
+                        <li>Used cards leave the hand until reshuffle.</li>
+                        <li>When the first 5 are gone, draw the second 5.</li>
+                        <li>If all 10 are exhausted, reshuffle and draw again so combat always continues.</li>
+                    </ul>
+                </section>
+
+                <section class="section">
+                    <p class="label">Where To Open</p>
+                    <ul>
+                        <li>Open <code>/combat-reference.html</code> in Live Server.</li>
+                        <li>Keep it next to the main game while we translate the rulebook into code.</li>
+                        <li>I can keep updating this page as the combat system gets more specific.</li>
+                    </ul>
+                </section>
+            </div>
+        </section>
+    </main>
+    <script>
+        const laneLabel = { high: "H", middle: "M", low: "L" };
+        const fighterStyleCopy = {
+            "Leap-Creek": { style: "Boundless Hand", keyword: "Reversal" },
+            Fangmarsh: { style: "Praying Mantis", keyword: "Flurry" },
+            Blackstone: { style: "Immense Fist", keyword: "Endure" },
+            Underclaw: { style: "Long Fist", keyword: "Overwhelm" },
+            Pouch: { style: "Drunken Fist", keyword: "Stumble" },
+        };
+        const keywordRules = {
+            Reversal: "Each successful block also deals 1 Hit Point back to the attacker.",
+            Flurry: "The card gains a second distinct attack lane using its swap lane.",
+            Endure: "The card gains a second distinct defense lane using its swap lane.",
+            Overwhelm: "Ignore the opponent's attack for that clash; it is skipped, not blocked.",
+            Stumble: "During Reaction, optionally replace the revealed card with a different random card.",
+        };
+        const baseCards = [
+            { id: "shared-hh", title: "High Wall", attack: "high", defense: "high", swapLane: "middle", isSpecial: false },
+            { id: "shared-hm", title: "Rising Split", attack: "high", defense: "middle", swapLane: "low", isSpecial: false },
+            { id: "shared-hl", title: "Sky Hook", attack: "high", defense: "low", swapLane: "middle", isSpecial: false },
+            { id: "shared-mh", title: "Center Break", attack: "middle", defense: "high", swapLane: "low", isSpecial: false },
+            { id: "shared-mm", title: "Mirror Gate", attack: "middle", defense: "middle", swapLane: "high", isSpecial: false },
+            { id: "shared-ml", title: "Cross Step", attack: "middle", defense: "low", swapLane: "high", isSpecial: false },
+            { id: "shared-lh", title: "Shin Sweep", attack: "low", defense: "high", swapLane: "middle", isSpecial: false },
+            { id: "shared-lm", title: "River Cut", attack: "low", defense: "middle", swapLane: "high", isSpecial: false },
+            { id: "shared-ll", title: "Rooted Hook", attack: "low", defense: "low", swapLane: "middle", isSpecial: false },
+        ];
+        const combatDeckLibrary = {
+            "Leap-Creek": baseCards.concat({ id: "special-mm-leap-creek", title: "Hidden Whirlpool", attack: "middle", defense: "middle", swapLane: "low", isSpecial: true }),
+            Fangmarsh: baseCards.concat({ id: "special-mm-fangmarsh", title: "Billowing Rush", attack: "middle", defense: "middle", swapLane: "low", isSpecial: true }),
+            Blackstone: baseCards.concat({ id: "special-mm-blackstone", title: "Tempered Veil", attack: "middle", defense: "middle", swapLane: "low", isSpecial: true }),
+            Underclaw: baseCards.concat({ id: "special-mm-underclaw", title: "Smothering Soil", attack: "middle", defense: "middle", swapLane: "low", isSpecial: true }),
+            Pouch: baseCards.concat({ id: "special-mm-pouch", title: "Splintered Step", attack: "middle", defense: "middle", swapLane: "low", isSpecial: true }),
+        };
+        const decks = Object.entries(fighterStyleCopy).map(([fighter, details]) => ({
+            fighter,
+            style: details.style,
+            keyword: details.keyword,
+            cards: combatDeckLibrary[fighter],
+            special: combatDeckLibrary[fighter][combatDeckLibrary[fighter].length - 1].title,
+        }));
+        const COST_ICON_SRC = "images/chinese-knot-svgrepo-com.svg";
+
+        function renderSlots(type, order, filledLane) {
+            return `
+                <div class="reference-mini-array">
+                    <div class="reference-mini-slots">
+                        ${order.map((lane) => `
+                            <div class="reference-mini-slot ${type}${lane === filledLane ? " is-filled" : ""}">
+                                ${laneLabel[lane]}
+                            </div>
+                        `).join("")}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDots(type, filledLane) {
+            return `
+                <div class="reference-mini-dots">
+                    ${["high", "middle", "low"].map((lane) => `
+                        <span class="reference-mini-dot ${type}${lane === filledLane ? " is-filled" : ""}"></span>
+                    `).join("")}
+                </div>
+            `;
+        }
+
+        function renderMode(mode, isSpecialCard) {
+            const isBakedKeyword = isSpecialCard && mode.kind === "text";
+            const hasCost = !isBakedKeyword;
+
+            return `
+                <div class="reference-mini-mode${hasCost ? " has-cost" : ""}${mode.kind === "text" ? " has-keyword" : ""}${isBakedKeyword ? " is-baked-keyword" : ""}">
+                    ${hasCost ? `<img class="reference-mini-cost-icon" src="${COST_ICON_SRC}" alt="" aria-hidden="true">` : ""}
+                    ${mode.kind === "text" ? `<strong${getModeLabelClass(mode.label)}>${mode.label}</strong>` : renderDots(mode.type, mode.lane)}
+                </div>
+            `;
+        }
+
+        function renderReferenceCard(card, keyword) {
+            const modes = card.isSpecial
+                ? [
+                    { kind: "text", label: keyword },
+                    { kind: "dots", type: "attack", lane: card.swapLane },
+                    { kind: "dots", type: "defense", lane: card.swapLane },
+                ]
+                : [
+                    { kind: "text", label: keyword },
+                    { kind: "dots", type: "attack", lane: card.swapLane },
+                    { kind: "dots", type: "defense", lane: card.swapLane },
+                ];
+
+            return `
+                <article class="reference-mini-card${card.isSpecial ? " is-special" : ""}">
+                    <div class="reference-mini-header">
+                        ${renderSlots("attack", ["high", "middle", "low"], card.attack)}
+                        ${renderSlots("defense", ["low", "middle", "high"], card.defense)}
+                    </div>
+                    ${!card.isSpecial ? `
+                        <div class="reference-mini-name-row">
+                            <div class="reference-mini-name" style="font-family: Manrope, Arial, sans-serif; font-size: 0.54rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">${card.title}</div>
+                        </div>
+                    ` : ""}
+                    ${card.isSpecial ? `
+                        <div class="reference-mini-keyword-row">
+                            ${renderMode({ kind: "text", label: keyword }, card.isSpecial)}
+                        </div>
+                    ` : ""}
+                    <div class="reference-mini-body">
+                        ${card.isSpecial ? `<div class="reference-mini-name" style="font-family: Manrope, Arial, sans-serif; font-size: 0.54rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">${card.title}</div>` : ""}
+                    </div>
+                    <div class="reference-mini-modes">
+                        ${modes.filter((mode) => !(card.isSpecial && mode.kind === "text" && mode.label === keyword)).map((mode) => renderMode(mode, card.isSpecial)).join("")}
+                    </div>
+                </article>
+            `;
+        }
+
+        function getModeLabelClass(label) {
+            const keywordClassMap = {
+                Reversal: "is-keyword-reversal",
+                Overwhelm: "is-keyword-overwhelm",
+                Flurry: "is-keyword-flurry",
+                Endure: "is-keyword-endure",
+                Stumble: "is-keyword-stumble",
+            };
+
+            const keywordClass = keywordClassMap[label];
+            return keywordClass ? ` class="${keywordClass}"` : "";
+        }
+
+        document.getElementById("deck-gallery").innerHTML = decks.map((deck) => `
+            <section class="deck-sheet">
+                <h3>${deck.fighter}</h3>
+                <p>Style: ${deck.style}. Keyword: ${deck.keyword}. Special card: ${deck.special}.</p>
+                <div class="reference-card-grid">
+                    ${deck.cards.map((card) => renderReferenceCard(card, deck.keyword)).join("")}
+                </div>
+            </section>
+        `).join("");
+
+        document.getElementById("shared-pattern-grid").innerHTML = baseCards.concat({
+            title: "Special M / M",
+            attack: "middle",
+            defense: "middle",
+            swapLane: "low",
+            isSpecial: true,
+        }).map((card) => `
+            <div class="deck-card">
+                <strong>${laneLabel[card.attack]} / ${laneLabel[card.defense]}</strong>
+                <p>Swap ${laneLabel[card.swapLane]}${card.isSpecial ? "<br>Keyword Always On" : ""}</p>
+            </div>
+        `).join("");
+
+        document.getElementById("keywords-list").innerHTML = Object.entries(keywordRules).map(([keyword, copy]) => `
+            <li><strong>${keyword}</strong>: ${copy}</li>
+        `).join("");
+    </script>
+</body>
+</html>
