@@ -18,14 +18,14 @@ const SCHOOL_STATUS_DESTROYED = "destroyed";
 const WHITE_DIE_WOLF = 1;
 const SILVER_WOLF_BASE_STRENGTH = 20;
 const TOTAL_TO_CHALLENGE = 15;
-const TRAVEL_ARROWS_ICON = new URL("../images/arrows-couple-svgrepo-com.svg", import.meta.url).href;
-const DEFEND_ICON = new URL("../images/defend-icon.svg", import.meta.url).href;
-const FIRE_ICON = new URL("../images/fire-svgrepo-com.svg", import.meta.url).href;
-const HEAL_ICON = new URL("../images/medicine-pharmacy-svgrepo-com.svg", import.meta.url).href;
-const QUEST_ICON = new URL("../images/business-card-svgrepo-com.svg", import.meta.url).href;
-const MOUNTAIN_ICON = new URL("../images/mountain-1-svgrepo-com.svg", import.meta.url).href;
-const CHINESE_KNOT_ICON = new URL("../images/chinese-knot-svgrepo-com.svg", import.meta.url).href;
-const MODAL_BACKGROUND = new URL("../images/modal-background.jpeg", import.meta.url).href;
+const TRAVEL_ARROWS_ICON = new URL("./images/arrows-couple-svgrepo-com.svg", import.meta.url).href;
+const DEFEND_ICON = new URL("./images/defend-icon.svg", import.meta.url).href;
+const FIRE_ICON = new URL("./images/fire-svgrepo-com.svg", import.meta.url).href;
+const HEAL_ICON = new URL("./images/medicine-pharmacy-svgrepo-com.svg", import.meta.url).href;
+const QUEST_ICON = new URL("./images/business-card-svgrepo-com.svg", import.meta.url).href;
+const MOUNTAIN_ICON = new URL("./images/mountain-1-svgrepo-com.svg", import.meta.url).href;
+const CHINESE_KNOT_ICON = new URL("./images/chinese-knot-svgrepo-com.svg", import.meta.url).href;
+const MODAL_BACKGROUND = new URL("./images/modal-background.jpeg", import.meta.url).href;
 const TOWN_STAR_POSITIONS = [
     { x: "50%", y: "0%" },
     { x: "106%", y: "40%" },

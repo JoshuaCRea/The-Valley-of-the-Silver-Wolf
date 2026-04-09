@@ -38,17 +38,17 @@ export const TOWN_DESCRIPTIONS = {
 };
 
 export const SCHOOL_SIGILS = {
-    "Leap-Creek": new URL("../images/leapcreek_sigil.png", import.meta.url).href,
-    Blackstone: new URL("../images/blackstone_sigil.png", import.meta.url).href,
-    Fangmarsh: new URL("../images/fangmarsh_sigil.png", import.meta.url).href,
-    Underclaw: new URL("../images/underclaw_sigil.png", import.meta.url).href,
-    Pouch: new URL("../images/pouch_sigil.png", import.meta.url).href,
+    "Leap-Creek": new URL("./images/leapcreek_sigil.png", import.meta.url).href,
+    Blackstone: new URL("./images/blackstone_sigil.png", import.meta.url).href,
+    Fangmarsh: new URL("./images/fangmarsh_sigil.png", import.meta.url).href,
+    Underclaw: new URL("./images/underclaw_sigil.png", import.meta.url).href,
+    Pouch: new URL("./images/pouch_sigil.png", import.meta.url).href,
 };
 
 export const FIGHTER_STATUS_FACES = {
-    healthy: new URL("../images/grinning-face-with-big-eyes-svgrepo-com.svg", import.meta.url).href,
-    injured: new URL("../images/face-with-head-bandage-svgrepo-com.svg", import.meta.url).href,
-    dead: new URL("../images/dizzy-face-svgrepo-com.svg", import.meta.url).href,
+    healthy: new URL("./images/grinning-face-with-big-eyes-svgrepo-com.svg", import.meta.url).href,
+    injured: new URL("./images/face-with-head-bandage-svgrepo-com.svg", import.meta.url).href,
+    dead: new URL("./images/dizzy-face-svgrepo-com.svg", import.meta.url).href,
 };
 
 export const TRACK_DETAILS = [

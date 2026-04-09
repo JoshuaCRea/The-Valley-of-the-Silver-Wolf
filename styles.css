@@ -379,7 +379,7 @@ td {
 }
 
 .practice-hero {
-   margin-bottom: 10px;
+   margin-bottom: 28px;
    text-align: center;
 }
 
@@ -482,7 +482,7 @@ td {
 
 .practice-node {
    position: absolute;
-   top: 50%;
+   top: calc(50% + 16px);
    left: 50%;
    width: 108px;
    height: 108px;
@@ -2604,6 +2604,7 @@ td {
    .practice-node {
       width: 84px;
       height: 84px;
+      top: calc(50% + 14px);
       transform:
          rotate(var(--angle))
          translateY(-225px)
@@ -2707,6 +2708,7 @@ td {
    .practice-node {
       width: 68px;
       height: 68px;
+      top: calc(50% + 12px);
       transform:
          rotate(var(--angle))
          translateY(-185px)
