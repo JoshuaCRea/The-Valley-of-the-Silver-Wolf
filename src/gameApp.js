@@ -74,6 +74,47 @@ const COMBAT_PHASES = [
         copy: "Queue up to one technique per fighter for the next clash before beginning again.",
     },
 ];
+const RULE_SECTIONS = [
+    {
+        title: "Protect the valley",
+        points: [
+            "Guard the five schools while building a fighter strong enough to face the Silver Wolf.",
+            `A fighter can challenge the Silver Wolf once their total Power, Stamina, Agility, Chi, and Wit reaches ${TOTAL_TO_CHALLENGE} or more.`,
+        ],
+    },
+    {
+        title: "Take your turn",
+        points: [
+            "Each active fighter gets 2 actions on their turn, or 1 action if they are Injured.",
+            "Travel, challenge a rival, heal in a town, defend a sieged school, or pass the turn to advance the round.",
+            "At the end of a turn, the Silver Wolf advances and the danger in the valley grows.",
+        ],
+    },
+    {
+        title: "Save the schools",
+        points: [
+            "A sieged school needs 3 total defend actions to be saved.",
+            "When a school is destroyed, every fighter loses Reputation, and any healthy fighter caught there becomes Injured.",
+            "If all five schools are destroyed, the game is lost.",
+        ],
+    },
+    {
+        title: "Fight your rivals",
+        points: [
+            "If rivals share a location, the active fighter can issue a challenge.",
+            "Combat runs through selection, reveal, reaction, calculation, and activation phases.",
+            "The winner gains 1 Reputation and a bonus action next turn. The loser becomes Injured and loses 1 Reputation.",
+        ],
+    },
+    {
+        title: "Defeat the Silver Wolf",
+        points: [
+            "Winning the final challenge wins the game.",
+            "Failing that challenge kills the fighter who attempted it.",
+            "If every challenger dies, the Silver Wolf remains undefeated.",
+        ],
+    },
+];
 const PLAYER_STARTING_STATS = {
     Pouch: { power: 0, stamina: 1, agility: 0, chi: 0, wit: 2 },
     "Leap-Creek": { power: 0, stamina: 0, agility: 1, chi: 2, wit: 0 },
@@ -745,6 +786,64 @@ function HometownSelectionModal({ players, onChoose, isClosing }) {
                         React.createElement("p", { className: "practice-hometown-option-keyword" }, `Keyword: ${styleCopy.keyword}`)
                     );
                 })
+            )
+        )
+    );
+}
+
+function RulesModal({ onClose }) {
+    return React.createElement(
+        "div",
+        {
+            className: "practice-modal-backdrop practice-rules-backdrop",
+            role: "presentation",
+        },
+        React.createElement(
+            "div",
+            {
+                className: "practice-modal practice-rules-modal",
+                role: "dialog",
+                "aria-modal": "true",
+                "aria-labelledby": "practice-rules-title",
+                style: { "--modal-background-image": `url("${MODAL_BACKGROUND}")` },
+            },
+            React.createElement("p", { className: "practice-modal-kicker" }, "Game Guide"),
+            React.createElement("h2", { id: "practice-rules-title" }, "Welcome to Star Valley!"),
+            React.createElement(
+                "button",
+                {
+                    className: "practice-modal-close",
+                    type: "button",
+                    onClick: onClose,
+                    "aria-label": "Close rules dialog",
+                },
+                "Close"
+            ),
+            React.createElement(
+                "div",
+                { className: "practice-rules-scroll" },
+                React.createElement(
+                    "p",
+                    { className: "practice-rules-intro" },
+                    "Lead one of the valley's fighters, defend the schools, and prepare for the final battle with the Silver Wolf."
+                ),
+                React.createElement(
+                    "div",
+                    { className: "practice-rules-grid" },
+                    RULE_SECTIONS.map((section) => React.createElement(
+                        "section",
+                        {
+                            key: section.title,
+                            className: "practice-rules-section",
+                        },
+                        React.createElement("h3", null, section.title),
+                        React.createElement(
+                            "ul",
+                            null,
+                            section.points.map((point) => React.createElement("li", { key: point }, point))
+                        )
+                    ))
+                )
             )
         )
     );
@@ -1985,6 +2084,7 @@ function PracticeGame() {
     const [selectedProfilePlayerId, setSelectedProfilePlayerId] = React.useState(null);
     const [showHometownModal, setShowHometownModal] = React.useState(false);
     const [isClosingHometownModal, setIsClosingHometownModal] = React.useState(false);
+    const [showRulesModal, setShowRulesModal] = React.useState(false);
     const [undoState, setUndoState] = React.useState(null);
 
     const currentPlayer = players[currentPlayerIndex];
@@ -2092,6 +2192,21 @@ function PracticeGame() {
             window.clearTimeout(hometownModalTimeoutRef.current);
         }
     }, []);
+
+    React.useEffect(() => {
+        if (!showRulesModal) {
+            return undefined;
+        }
+
+        function handleKeydown(event) {
+            if (event.key === "Escape") {
+                setShowRulesModal(false);
+            }
+        }
+
+        window.addEventListener("keydown", handleKeydown);
+        return () => window.removeEventListener("keydown", handleKeydown);
+    }, [showRulesModal]);
 
     React.useLayoutEffect(() => {
         const nextRects = new Map();
@@ -3117,6 +3232,17 @@ function PracticeGame() {
                     React.createElement(
                         "div",
                         { className: "practice-board" },
+                        React.createElement(
+                            "button",
+                            {
+                                className: "practice-board-info-button",
+                                type: "button",
+                                onClick: () => setShowRulesModal(true),
+                                "aria-label": "Open game rules",
+                                title: "Game rules",
+                            },
+                            "i"
+                        ),
                         React.createElement("div", { className: "practice-board-glow" }),
                         TRACK_DETAILS.map((location, index) =>
                             React.createElement(BoardNode, {
@@ -3238,6 +3364,11 @@ function PracticeGame() {
                 players,
                 onChoose: chooseHometown,
                 isClosing: isClosingHometownModal,
+            })
+            : null,
+        showRulesModal
+            ? React.createElement(RulesModal, {
+                onClose: () => setShowRulesModal(false),
             })
             : null,
         combatState
