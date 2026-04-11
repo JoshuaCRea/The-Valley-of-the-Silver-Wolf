@@ -2085,19 +2085,30 @@ td {
 .practice-rules-grid {
    display: grid;
    grid-template-columns: repeat(2, minmax(0, 1fr));
-   gap: 16px;
+   column-gap: 16px;
+   row-gap: 26px;
+   align-items: start;
 }
 
 .practice-rules-section {
-   min-height: 100%;
-   padding: 18px 20px;
+   position: relative;
+   display: grid;
+   align-content: start;
+   gap: 10px;
+   box-sizing: border-box;
+   padding: 26px 20px 20px;
    border: 1px solid rgba(255, 255, 255, 0.08);
    border-radius: 20px;
-   background: rgba(10, 16, 26, 0.6);
+   background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+      rgba(10, 16, 26, 0.72);
+   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+   overflow-wrap: anywhere;
+   overflow: hidden;
 }
 
 .practice-rules-section h3 {
-   margin: 0 0 10px;
+   margin: 0;
    font-family: "Cinzel", serif;
    font-size: 1rem;
    color: #fff2d2;
@@ -2108,10 +2119,108 @@ td {
    padding-left: 18px;
    color: #d8e0ee;
    line-height: 1.6;
+   display: grid;
+   gap: 8px;
+}
+
+.practice-rules-inline-pips {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+   margin: 0 0.2rem;
+   vertical-align: middle;
+}
+
+.practice-rules-inline-pips .practice-action-indicator {
+   width: 14px;
+   height: 14px;
+}
+
+.practice-rules-inline-heal {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   margin: 0 0.15rem;
+   vertical-align: middle;
+}
+
+.practice-rules-inline-heal .practice-player-action-shape {
+   width: 18px;
+   height: 18px;
+}
+
+.practice-rules-inline-fire,
+.practice-rules-inline-defend,
+.practice-rules-inline-hit-point,
+.practice-rules-inline-form-point,
+.practice-rules-inline-quest {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   margin: 0 0.15rem;
+   vertical-align: middle;
+}
+
+.practice-rules-inline-fire-image {
+   width: 18px;
+   height: 18px;
+   object-fit: contain;
+   display: block;
+   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.practice-rules-inline-defend .practice-player-action-shape {
+   width: 18px;
+   height: 18px;
+}
+
+.practice-rules-inline-hit-point .practice-hit-point {
+   width: 18px;
+   height: 18px;
+}
+
+.practice-rules-inline-form-point .practice-form-knot {
+   width: 18px;
+   height: 18px;
+}
+
+.practice-rules-inline-quest .practice-player-action-shape {
+   width: 18px;
+   height: 18px;
+}
+
+.practice-rules-reputation-meter {
+   margin-top: 12px;
+}
+
+.practice-rules-reputation-meter .practice-roster-bar-indicator {
+   width: min(100%, 248px);
+}
+
+.practice-rules-action-showcase {
+   display: grid;
+   grid-template-columns: repeat(5, minmax(52px, 1fr));
+   gap: 12px;
+   align-items: start;
+   margin-top: 14px;
+}
+
+.practice-rules-action-showcase .practice-player-action-group,
+.practice-rules-action-showcase .practice-player-action-button {
+   min-width: 0;
+}
+
+.practice-rules-action-showcase .practice-player-action-button:disabled {
+   opacity: 1;
+   cursor: default;
+}
+
+.practice-rules-action-showcase .practice-player-action-text {
+   text-align: center;
 }
 
 .practice-rules-section li + li {
-   margin-top: 8px;
+   margin-top: 0;
 }
 
 .practice-combat-backdrop {
@@ -2619,6 +2728,10 @@ td {
 
    .practice-rules-grid {
       grid-template-columns: 1fr;
+   }
+
+   .practice-rules-action-showcase {
+      grid-template-columns: repeat(3, minmax(52px, 1fr));
    }
 
    .practice-combat-grid {

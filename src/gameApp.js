@@ -78,40 +78,73 @@ const RULE_SECTIONS = [
     {
         title: "Protect the valley",
         points: [
-            "Guard the five schools while building a fighter strong enough to face the Silver Wolf.",
-            `A fighter can challenge the Silver Wolf once their total Power, Stamina, Agility, Chi, and Wit reaches ${TOTAL_TO_CHALLENGE} or more.`,
+            "You are native to this valley, and you begin the game in your hometown, one of 5 cities. You are a student at your city's school of Kung Fu.",
+            "A great evil has come to the valley... a malevolent master of Kung Fu who calls himself \"The Silver Wolf\". He believes that if he destroys all five schools of kung fu in the valley, he will be unstoppable.",
+            "Guard and defend the five schools while building your fighter up, until you are strong enough to face the Silver Wolf and end his reign of terror once and for all.",
         ],
     },
     {
         title: "Take your turn",
         points: [
-            "Each active fighter gets 2 actions on their turn, or 1 action if they are Injured.",
-            "Travel, challenge a rival, heal in a town, defend a sieged school, or pass the turn to advance the round.",
-            "At the end of a turn, the Silver Wolf advances and the danger in the valley grows.",
+            {
+                type: "actions",
+                text: "Each player gets 2 actions",
+                trailingText: "on their turn, or 1 action if they are Injured.",
+            },
+            {
+                type: "legend",
+                text: "Use your actions to travel the valley, challenge a rival, undertake a quest to improve your character, visit a town's healers, or defend a school that is under siege.",
+            },
+            {
+                type: "text",
+                text: "At the end of each player's turn, the Silver Wolf advances and the danger in the valley grows.",
+            },
         ],
     },
     {
         title: "Save the schools",
         points: [
-            "A sieged school needs 3 total defend actions to be saved.",
-            "When a school is destroyed, every fighter loses Reputation, and any healthy fighter caught there becomes Injured.",
-            "If all five schools are destroyed, the game is lost.",
+            {
+                type: "save-school-injury",
+                text: "When the Silver Wolf begins attacking a school, if you are in the same city as that school, he immediately injures you. Injury means you only get one action",
+                trailingText: "per turn. Whenever you are in a city, you can spend an action to get healing and become healthy again.",
+            },
+            {
+                type: "save-school-defend",
+            },
+            "When a school is destroyed, every player loses Reputation. If all five schools are destroyed, the game is lost. The Silver Wolf has won.",
+        ],
+    },
+    {
+        title: "Learn Kung Fu",
+        points: [
+            {
+                type: "learn-kung-fu-combat",
+            },
+            {
+                type: "learn-kung-fu-form",
+            },
+            {
+                type: "learn-kung-fu-quest",
+            },
         ],
     },
     {
         title: "Fight your rivals",
         points: [
-            "If rivals share a location, the active fighter can issue a challenge.",
-            "Combat runs through selection, reveal, reaction, calculation, and activation phases.",
-            "The winner gains 1 Reputation and a bonus action next turn. The loser becomes Injured and loses 1 Reputation.",
+            {
+                type: "fight-rivals-practice",
+            },
+            "Sometimes you may find yourself in the same place as another player. When you do, you may spend an action to challenge that player to a fight! If a player declines, they lose Reputation. Fighting other players is a great way to slow them down and ensure you are the one who wins in the end!",
+            "Your character becomes stronger as you play and gain Techniques, Hit Points, Form Points, and other rewards. When you think you are strong enough, you may challenge the Silver Wolf, who is hiding on the mountain in the center of the valley.",
         ],
     },
     {
         title: "Defeat the Silver Wolf",
         points: [
-            "Winning the final challenge wins the game.",
-            "Failing that challenge kills the fighter who attempted it.",
-            "If every challenger dies, the Silver Wolf remains undefeated.",
+            "When you challenge the Silver Wolf, he will accept your challenge, and you will fight him using everything you have learned over the course of the game.",
+            "While this fight is taking place, the Silver Wolf will no longer attack the schools of the valley, so the other players will not have to worry about defending them.",
+            "If you defeat the Silver Wolf in combat, you win the game! But be cautious, the Silver Wolf plays for keeps. If he defeats you in this fight, he kills you. The game continues for the other players, and you are out. If the Silver Wolf kills every player, he wins the game! (That's right- it's possible for none of the players to win!)",
         ],
     },
 ];
@@ -791,6 +824,311 @@ function HometownSelectionModal({ players, onChoose, isClosing }) {
     );
 }
 
+function RulesActionPips() {
+    return React.createElement(
+        "span",
+        { className: "practice-rules-inline-pips", "aria-hidden": "true" },
+        React.createElement("span", { className: "practice-action-indicator" }),
+        React.createElement("span", { className: "practice-action-indicator" })
+    );
+}
+
+function RulesBonusPip() {
+    return React.createElement(
+        "span",
+        { className: "practice-rules-inline-pips", "aria-hidden": "true" },
+        React.createElement("span", { className: "practice-action-indicator is-bonus" })
+    );
+}
+
+function RulesActionLegend() {
+    return React.createElement(
+        "div",
+        { className: "practice-rules-action-showcase", "aria-hidden": "true" },
+        React.createElement(
+            "div",
+            { className: "practice-player-action-group is-travel-group" },
+            React.createElement(
+                "div",
+                { className: "practice-travel-buttons" },
+                TRAVEL_ACTIONS.map((action) => React.createElement(
+                    "button",
+                    {
+                        key: `rules-${action.id}`,
+                        className: `practice-player-action-button ${action.id === "counter-clockwise" ? "is-left-travel" : ""}`,
+                        type: "button",
+                        disabled: true,
+                        tabIndex: -1,
+                    },
+                    React.createElement("span", {
+                        className: `practice-player-action-shape ${action.shapeClass} is-image-arrow`,
+                        style: { "--travel-icon": `url("${TRAVEL_ARROWS_ICON}")`, backgroundImage: `url("${TRAVEL_ARROWS_ICON}")` },
+                    })
+                ))
+            ),
+            React.createElement("span", { className: "practice-player-action-text" }, "Travel")
+        ),
+        OTHER_PLAYER_ACTIONS.map((action) => {
+            const isRollFateAction = action.id === "roll";
+            const isHealAction = action.id === "heal";
+            const isSaveSchoolAction = action.id === "save-school";
+
+            return React.createElement(
+                "button",
+                {
+                    key: `rules-${action.id}`,
+                    className: `practice-player-action-button${isSaveSchoolAction ? " is-save-school" : ""}`,
+                    type: "button",
+                    disabled: true,
+                    tabIndex: -1,
+                },
+                React.createElement(
+                    "span",
+                    { className: "practice-player-action-main" },
+                    React.createElement("span", {
+                        className: `practice-player-action-shape ${action.shapeClass}${isSaveSchoolAction ? " is-image-defend" : ""}${isRollFateAction ? " is-image-quest" : ""}${isHealAction ? " is-image-heal" : ""}`,
+                        style: isSaveSchoolAction
+                            ? {
+                                "--defend-icon": `url("${DEFEND_ICON}")`,
+                                "--defend-fire-icon": `url("${FIRE_ICON}")`,
+                            }
+                            : isHealAction
+                                ? { "--heal-icon": `url("${HEAL_ICON}")`, backgroundImage: `url("${HEAL_ICON}")` }
+                                : isRollFateAction
+                                    ? { "--quest-icon": `url("${QUEST_ICON}")`, backgroundImage: `url("${QUEST_ICON}")` }
+                                    : undefined,
+                    }),
+                    React.createElement("span", { className: "practice-player-action-text" }, action.label)
+                ),
+                isSaveSchoolAction
+                    ? React.createElement(
+                        "span",
+                        { className: "practice-save-school-pips" },
+                        Array.from({ length: 3 }).map((_, index) =>
+                            React.createElement("span", {
+                                key: `rules-save-pip-${index}`,
+                                className: `practice-save-school-pip${index === 0 ? " is-filled" : ""}`,
+                            })
+                        )
+                    )
+                    : null
+            );
+        })
+    );
+}
+
+function RulesHealIcon() {
+    return React.createElement(
+        "span",
+        { className: "practice-rules-inline-heal", "aria-hidden": "true" },
+        React.createElement("span", {
+            className: "practice-player-action-shape is-heal is-image-heal",
+            style: { "--heal-icon": `url("${HEAL_ICON}")`, backgroundImage: `url("${HEAL_ICON}")` },
+        })
+    );
+}
+
+function RulesFireIcon() {
+    return React.createElement(
+        "span",
+        { className: "practice-rules-inline-fire", "aria-hidden": "true" },
+        React.createElement("img", {
+            className: "practice-rules-inline-fire-image",
+            src: FIRE_ICON,
+            alt: "",
+        })
+    );
+}
+
+function RulesDefendIcon() {
+    return React.createElement(
+        "span",
+        { className: "practice-rules-inline-defend", "aria-hidden": "true" },
+        React.createElement("span", {
+            className: "practice-player-action-shape is-defend is-image-defend",
+            style: {
+                "--defend-icon": `url("${DEFEND_ICON}")`,
+                "--defend-fire-icon": `url("${FIRE_ICON}")`,
+            },
+        })
+    );
+}
+
+function RulesHitPointIcon() {
+    return React.createElement(
+        "span",
+        { className: "practice-rules-inline-hit-point", "aria-hidden": "true" },
+        React.createElement("span", { className: "practice-hit-point is-filled" })
+    );
+}
+
+function RulesFormPointIcon() {
+    return React.createElement(
+        "span",
+        { className: "practice-rules-inline-form-point", "aria-hidden": "true" },
+        React.createElement("img", {
+            className: "practice-form-knot is-filled",
+            src: CHINESE_KNOT_ICON,
+            alt: "",
+        })
+    );
+}
+
+function RulesQuestIcon() {
+    return React.createElement(
+        "span",
+        { className: "practice-rules-inline-quest", "aria-hidden": "true" },
+        React.createElement("span", {
+            className: "practice-player-action-shape is-quest is-image-quest",
+            style: { "--quest-icon": `url("${QUEST_ICON}")`, backgroundImage: `url("${QUEST_ICON}")` },
+        })
+    );
+}
+
+function RulesReputationMeter() {
+    return React.createElement(
+        "div",
+        { className: "practice-rules-reputation-meter" },
+        React.createElement(
+            "div",
+            {
+                className: "practice-roster-bar-indicator",
+                style: { "--reputation-position": 5 },
+                "aria-hidden": "true",
+            },
+            React.createElement(
+                "div",
+                { className: "practice-roster-bar" },
+                React.createElement("span", { className: "practice-roster-bar-segment is-black" }),
+                React.createElement("span", { className: "practice-roster-bar-segment is-black" }),
+                React.createElement("span", { className: "practice-roster-bar-segment is-brown" }),
+                React.createElement("span", { className: "practice-roster-bar-segment is-brown" }),
+                React.createElement("span", { className: "practice-roster-bar-segment is-gold" })
+            ),
+            React.createElement("span", { className: "practice-roster-bar-pointer" })
+        )
+    );
+}
+
+function renderRulePoint(point) {
+    if (typeof point === "string") {
+        return point;
+    }
+
+    if (point.type === "actions") {
+        return React.createElement(
+            React.Fragment,
+            null,
+            point.text,
+            " ",
+            "(",
+            React.createElement(RulesActionPips, null),
+            ")",
+            " ",
+            point.trailingText
+        );
+    }
+
+    if (point.type === "legend") {
+        return React.createElement(
+            React.Fragment,
+            null,
+            React.createElement("span", null, point.text),
+            React.createElement(RulesActionLegend, null)
+        );
+    }
+
+    if (point.type === "save-school-injury") {
+        return React.createElement(
+            React.Fragment,
+            null,
+            point.text,
+            " ",
+            "(",
+            React.createElement(
+                "span",
+                { className: "practice-rules-inline-pips", "aria-hidden": "true" },
+                React.createElement("span", { className: "practice-action-indicator" })
+            ),
+            ")",
+            " ",
+            point.trailingText,
+            " ",
+            "(",
+            React.createElement(RulesHealIcon, null),
+            ")"
+        );
+    }
+
+    if (point.type === "save-school-defend") {
+        return React.createElement(
+            React.Fragment,
+            null,
+            "When a school is being sieged ",
+            "(",
+            React.createElement(RulesFireIcon, null),
+            ")",
+            ", players must travel to the city where that school is located, and use actions to Defend ",
+            "(",
+            React.createElement(RulesDefendIcon, null),
+            ")",
+            " the school. It takes 3 actions to save the school and drive the Silver Wolf out of town. These actions can be spent by one, two, or three players. If 3 Defends are not completed in time, the school becomes Destroyed."
+        );
+    }
+
+    if (point.type === "learn-kung-fu-combat") {
+        return React.createElement(
+            React.Fragment,
+            null,
+            "Your hometown determines how you fight at the start of the game. Each school has a different fighting style, represented by a keyword. You and your opponent will have a number of hit points ",
+            "(",
+            React.createElement(RulesHitPointIcon, null),
+            ")",
+            " at the start of each fight. If you hit them that many times, you win! If they hit you that many times, you lose."
+        );
+    }
+
+    if (point.type === "learn-kung-fu-form") {
+        return React.createElement(
+            React.Fragment,
+            null,
+            "You can use Form Points ",
+            "(",
+            React.createElement(RulesFormPointIcon, null),
+            ")",
+            " to change your moves in a fight. You can use Techniques to change your ",
+            React.createElement("em", null, "next"),
+            " move."
+        );
+    }
+
+    if (point.type === "learn-kung-fu-quest") {
+        return React.createElement(
+            React.Fragment,
+            null,
+            "As you travel the valley, you can undertake Quests ",
+            "(",
+            React.createElement(RulesQuestIcon, null),
+            ")",
+            ". Successfully completing these Quests will earn you a Technique and other rewards to improve your character. Your reputation meter determines which Quests you are allowed to undertake... Black (poor), Brown (fair), or Gold (good). The better the Quest, the better the reward!",
+            React.createElement(RulesReputationMeter, null)
+        );
+    }
+
+    if (point.type === "fight-rivals-practice") {
+        return React.createElement(
+            React.Fragment,
+            null,
+            "You can practice your kung fu in fights. Many Quests are fights with characters you meet in your travels. If you lose a fight, you lose Reputation and become injured. If you win a fight, you gain Reputation and a bonus action to use on your next turn. ",
+            "(",
+            React.createElement(RulesBonusPip, null),
+            ")"
+        );
+    }
+
+    return point.text;
+}
+
 function RulesModal({ onClose }) {
     return React.createElement(
         "div",
@@ -825,7 +1163,7 @@ function RulesModal({ onClose }) {
                 React.createElement(
                     "p",
                     { className: "practice-rules-intro" },
-                    "Lead one of the valley's fighters, defend the schools, and prepare for the final battle with the Silver Wolf."
+                    "Play as one of the valley's fighters, defend the schools of Kung Fu, and prepare for the final battle with the Silver Wolf!"
                 ),
                 React.createElement(
                     "div",
@@ -840,7 +1178,11 @@ function RulesModal({ onClose }) {
                         React.createElement(
                             "ul",
                             null,
-                            section.points.map((point) => React.createElement("li", { key: point }, point))
+                            section.points.map((point, index) => React.createElement(
+                                "li",
+                                { key: `${section.title}-${index}` },
+                                renderRulePoint(point)
+                            ))
                         )
                     ))
                 )
