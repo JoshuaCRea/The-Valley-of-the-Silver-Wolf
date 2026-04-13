@@ -2180,8 +2180,9 @@ td {
 }
 
 .practice-rules-inline-form-point .practice-form-knot {
-   width: 18px;
-   height: 18px;
+   width: 20px;
+   height: 20px;
+   filter: brightness(1.25) saturate(1.18) drop-shadow(0 0 4px rgba(185, 42, 42, 0.28));
 }
 
 .practice-rules-inline-quest .practice-player-action-shape {
@@ -2229,22 +2230,110 @@ td {
 }
 
 .practice-combat-modal {
-   width: min(1280px, 100%);
+   position: relative;
+   width: min(1600px, calc(100vw - 24px));
+   max-width: none;
+   margin-top: 72px;
    background:
       linear-gradient(180deg, rgba(7, 11, 19, 0.94), rgba(8, 12, 22, 0.97)),
       radial-gradient(circle at top, rgba(214, 181, 108, 0.18), transparent 42%);
 }
 
+.practice-combat-chrome {
+   position: absolute;
+   top: 18px;
+   left: 50%;
+   transform: translateX(-50%);
+   width: min(1600px, calc(100vw - 24px));
+   display: grid;
+   grid-template-columns: 1fr auto 1fr;
+   align-items: start;
+   pointer-events: none;
+}
+
+.practice-combat-admin-toggle {
+   display: grid;
+   gap: 8px;
+   justify-items: start;
+   justify-self: start;
+   pointer-events: auto;
+}
+
+.practice-combat-admin-label {
+   text-transform: uppercase;
+   letter-spacing: 0.16em;
+   font-size: 0.62rem;
+   color: var(--practice-gold);
+}
+
+.practice-combat-admin-toggle-buttons {
+   display: inline-flex;
+   gap: 8px;
+   flex-wrap: wrap;
+}
+
+.practice-combat-admin-button {
+   padding: 8px 12px;
+   border-radius: 999px;
+   border: 1px solid rgba(255, 255, 255, 0.12);
+   background: rgba(255, 255, 255, 0.05);
+   color: var(--practice-text);
+   font: inherit;
+   font-size: 0.8rem;
+   cursor: pointer;
+}
+
+.practice-combat-admin-button.is-active {
+   border-color: rgba(215, 179, 114, 0.62);
+   background: rgba(215, 179, 114, 0.16);
+}
+
+.practice-combat-title {
+   grid-column: 2;
+   margin: 4px 0 0;
+   justify-self: center;
+   font-family: "New Rocker", serif;
+   font-size: clamp(2rem, 4vw, 3.2rem);
+   letter-spacing: 0.08em;
+   line-height: 0.95;
+   color: #f1dfb7;
+   text-shadow:
+      0 3px 18px rgba(0, 0, 0, 0.92),
+      0 0 24px rgba(215, 179, 114, 0.16);
+}
+
+.practice-combat-layout {
+   display: grid;
+   grid-template-columns: 220px minmax(0, 1fr);
+   gap: 18px;
+   align-items: stretch;
+   margin-top: 8px;
+}
+
+.practice-combat-sidebar {
+   display: grid;
+   gap: 14px;
+}
+
+.practice-combat-sidebar-kicker {
+   margin: 0;
+   text-align: center;
+}
+
 .practice-combat-phase-strip {
    display: grid;
-   grid-template-columns: repeat(5, minmax(0, 1fr));
+   grid-template-columns: minmax(0, 1fr);
    gap: 10px;
-   margin-top: 22px;
+   padding: 14px;
+   border-radius: 22px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   background: rgba(255, 255, 255, 0.04);
+   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .practice-combat-phase-chip {
-   display: grid;
-   gap: 4px;
+   display: flex;
+   align-items: center;
    padding: 10px 12px;
    border-radius: 14px;
    border: 1px solid rgba(255, 255, 255, 0.08);
@@ -2262,7 +2351,6 @@ td {
    opacity: 0.92;
 }
 
-.practice-combat-phase-count,
 .practice-combat-phase-name,
 .practice-combat-phase-label,
 .practice-combatant-kicker,
@@ -2272,7 +2360,6 @@ td {
    letter-spacing: 0.14em;
 }
 
-.practice-combat-phase-count,
 .practice-combat-phase-label,
 .practice-combatant-kicker,
 .practice-combatant-resource-label,
@@ -2282,17 +2369,51 @@ td {
 }
 
 .practice-combat-phase-name {
-   font-size: 0.72rem;
-   line-height: 1.35;
+   font-size: 0.76rem;
+   line-height: 1.2;
    color: #dce4f5;
+}
+
+.practice-combat-sidebar-card {
+   border-radius: 22px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   background: rgba(255, 255, 255, 0.04);
+   padding: 18px;
+   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+   display: grid;
+   gap: 14px;
+   justify-items: center;
+   text-align: center;
+}
+
+.practice-combat-sidebar-card h3 {
+   margin: 0;
+}
+
+.practice-combat-sidebar-style,
+.practice-combat-sidebar-resources {
+   display: grid;
+   gap: 12px;
+}
+
+.practice-combat-sidebar-line {
+   display: grid;
+   gap: 4px;
+   justify-items: center;
+}
+
+.practice-combat-sidebar-label {
+   text-transform: uppercase;
+   letter-spacing: 0.14em;
+   font-size: 0.68rem;
+   color: var(--practice-gold);
 }
 
 .practice-combat-grid {
    display: grid;
-   grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.2fr) minmax(220px, 0.72fr);
+   grid-template-columns: minmax(0, 1fr);
    gap: 18px;
-   align-items: start;
-   margin-top: 22px;
+   align-items: stretch;
 }
 
 .practice-combatant-card,
@@ -2304,9 +2425,39 @@ td {
    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+.practice-combat-phase-panel {
+   min-height: 68vh;
+}
+
 .practice-combatant-card h3,
 .practice-combat-phase-panel h3 {
    margin: 6px 0 0;
+}
+
+.practice-combat-view-opponent {
+   display: grid;
+   gap: 8px;
+   padding: 18px;
+   border-radius: 22px;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   background: rgba(255, 255, 255, 0.04);
+   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.practice-combat-view-opponent strong {
+   font-family: "Cinzel", serif;
+   font-size: 1.05rem;
+}
+
+.practice-combat-view-opponent span {
+   color: var(--practice-muted);
+   line-height: 1.45;
+}
+
+.practice-combat-view-opponent-resources {
+   display: grid;
+   gap: 10px;
+   justify-items: center;
 }
 
 .practice-combatant-resource-grid {
@@ -2343,12 +2494,30 @@ td {
    margin-top: 18px;
 }
 
+.practice-combat-selection-grid.is-single-view,
+.practice-combat-reveal-grid.is-single-view,
+.practice-combat-placeholder-grid.is-single-view {
+   grid-template-columns: minmax(0, 1fr);
+}
+
 .practice-combat-selection-column {
    display: grid;
    gap: 12px;
 }
 
-.practice-combat-hand-grid,
+.practice-combat-hand-dock {
+   display: grid;
+   gap: 12px;
+}
+
+.practice-combat-hand-grid {
+   display: grid;
+   grid-template-columns: repeat(5, minmax(0, 164px));
+   justify-content: space-between;
+   gap: 10px;
+   align-items: start;
+}
+
 .practice-combat-mode-grid {
    display: grid;
    gap: 10px;
@@ -2357,10 +2526,11 @@ td {
 .practice-combat-card-button,
 .practice-combat-mode-button {
    display: grid;
-   gap: 6px;
+   gap: 4px;
    justify-items: stretch;
+   align-items: start;
    padding: 0;
-   border-radius: 18px;
+   border-radius: 14px;
    border: 1px solid rgba(255, 255, 255, 0.08);
    background: transparent;
    color: var(--practice-text);
@@ -2383,10 +2553,13 @@ td {
 
 .practice-combat-card-face {
    display: grid;
-   gap: 14px;
-   min-height: 210px;
-   padding: 16px;
-   border-radius: 18px;
+   grid-template-rows: auto auto 1fr;
+   gap: 10px;
+   width: 100%;
+   aspect-ratio: 2 / 3;
+   padding: 12px;
+   box-sizing: border-box;
+   border-radius: 14px;
    border: 1px solid rgba(255, 255, 255, 0.08);
    background:
       radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 34%),
@@ -2397,7 +2570,7 @@ td {
 }
 
 .practice-combat-card-face.is-button-face {
-   min-height: 100%;
+   height: auto;
 }
 
 .practice-combat-card-face.is-selected,
@@ -2427,61 +2600,64 @@ td {
    display: flex;
    justify-content: space-between;
    align-items: flex-start;
-   gap: 12px;
+   gap: 8px;
 }
 
 .practice-combat-card-title-block,
 .practice-combat-card-lane-block {
    display: grid;
-   gap: 6px;
+   gap: 2px;
 }
 
 .practice-combat-card-eyebrow,
 .practice-combat-card-lane-label {
    margin: 0;
-   font-size: 0.7rem;
+   font-size: 0.6rem;
    letter-spacing: 0.14em;
    text-transform: uppercase;
    color: rgba(244, 239, 227, 0.62);
 }
 
 .practice-combat-card-name {
-   font-size: 1rem;
-   line-height: 1.2;
+   font-size: 0.88rem;
+   line-height: 1.15;
 }
 
 .practice-combat-card-swap-badge,
 .practice-combat-card-keyword {
-   padding: 7px 10px;
+   padding: 5px 7px;
    border-radius: 999px;
    background: rgba(255, 255, 255, 0.08);
    color: var(--practice-text);
-   font-size: 0.76rem;
+   font-size: 0.66rem;
    line-height: 1.2;
-   white-space: nowrap;
+   white-space: normal;
+   text-align: center;
 }
 
 .practice-combat-card-lane-grid {
    display: grid;
    grid-template-columns: repeat(2, minmax(0, 1fr));
-   gap: 12px;
+   gap: 8px;
 }
 
 .practice-combat-card-lane-row {
    display: flex;
-   gap: 8px;
+   gap: 4px;
+   justify-content: space-between;
 }
 
 .practice-combat-card-lane {
-   width: 34px;
-   height: 42px;
+   flex: 1 1 0;
+   min-width: 0;
+   height: 34px;
    display: grid;
    place-items: center;
-   border-radius: 8px;
+   border-radius: 6px;
    border: 1px solid rgba(255, 255, 255, 0.12);
    background: rgba(255, 255, 255, 0.04);
    color: rgba(244, 239, 227, 0.42);
-   font-size: 0.8rem;
+   font-size: 0.7rem;
    font-weight: 700;
 }
 
@@ -2539,6 +2715,10 @@ td {
    justify-content: space-between;
    gap: 12px;
    margin-top: 20px;
+}
+
+.practice-combat-other-status {
+   margin-top: 10px;
 }
 
 .practice-combat-button {
@@ -2735,6 +2915,10 @@ td {
    }
 
    .practice-combat-grid {
+      grid-template-columns: 1fr;
+   }
+
+   .practice-combat-layout {
       grid-template-columns: 1fr;
    }
 

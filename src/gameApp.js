@@ -112,7 +112,7 @@ const RULE_SECTIONS = [
             {
                 type: "save-school-defend",
             },
-            "When a school is destroyed, every player loses Reputation. If all five schools are destroyed, the game is lost. The Silver Wolf has won.",
+            "When a school is destroyed, every player loses Reputation, and that school's Quests are no longer available to be undertaken... and by extension, the techniques from that school are no longer available to be learned. If all five schools are destroyed, the game is lost. The Silver Wolf has won.",
         ],
     },
     {
@@ -1239,6 +1239,70 @@ function CombatantSummary({ fighter, toneClassName }) {
     );
 }
 
+function CombatSidebarSummary({ fighter }) {
+    const styleCopy = FIGHTER_STYLE_COPY[fighter.hometownName] || { style: "Unknown", keyword: "Unknown" };
+
+    return React.createElement(
+        "article",
+        { className: "practice-combat-sidebar-card" },
+        React.createElement("h3", null, fighter.displayName || fighter.name),
+        React.createElement(
+            "div",
+            { className: "practice-combat-sidebar-style" },
+            React.createElement(
+                "div",
+                { className: "practice-combat-sidebar-line" },
+                React.createElement("span", { className: "practice-combat-sidebar-label" }, "Style"),
+                React.createElement("strong", null, styleCopy.style)
+            ),
+            React.createElement(
+                "div",
+                { className: "practice-combat-sidebar-line" },
+                React.createElement("span", { className: "practice-combat-sidebar-label" }, "Keyword"),
+                React.createElement("strong", null, styleCopy.keyword)
+            )
+        ),
+        React.createElement(
+            "div",
+            { className: "practice-combat-sidebar-resources" },
+            React.createElement(
+                "div",
+                { className: "practice-combatant-resource" },
+                React.createElement("p", { className: "practice-combatant-resource-label" }, "Hit Points"),
+                React.createElement(
+                    "div",
+                    { className: "practice-form-points-row", "aria-label": `Hit Points ${fighter.currentHitPoints ?? 0} of ${fighter.maxHitPoints ?? 0}` },
+                    Array.from({ length: fighter.maxHitPoints ?? 0 }).map((_, index) =>
+                        React.createElement("span", {
+                            key: `sidebar-hit-${fighter.id}-${index}`,
+                            className: `practice-hit-point${index < (fighter.currentHitPoints ?? 0) ? " is-filled" : ""}`,
+                            "aria-hidden": "true",
+                        })
+                    )
+                )
+            ),
+            React.createElement(
+                "div",
+                { className: "practice-combatant-resource" },
+                React.createElement("p", { className: "practice-combatant-resource-label" }, "Form Points"),
+                React.createElement(
+                    "div",
+                    { className: "practice-form-points-row is-character-sheet-form-points", "aria-label": `Form Points ${fighter.currentFormPoints ?? 0} of ${fighter.maxFormPoints ?? 0}` },
+                    Array.from({ length: fighter.maxFormPoints ?? 0 }).map((_, index) =>
+                        React.createElement("img", {
+                            key: `sidebar-form-${fighter.id}-${index}`,
+                            className: `practice-form-knot${index < (fighter.currentFormPoints ?? 0) ? " is-filled" : ""}`,
+                            src: CHINESE_KNOT_ICON,
+                            alt: "",
+                            "aria-hidden": "true",
+                        })
+                    )
+                )
+            )
+        )
+    );
+}
+
 const COMBAT_LANES = ["high", "middle", "low"];
 const COMBAT_LANE_LABELS = {
     high: "High",
@@ -1539,7 +1603,11 @@ function CombatCardFace({
     ].filter(Boolean).join(" ");
 
     function renderLanePips(kind, lanes) {
-        return COMBAT_LANES.map((lane) => React.createElement(
+        const laneOrder = kind === "attack"
+            ? COMBAT_LANES
+            : COMBAT_LANES.slice().reverse();
+
+        return laneOrder.map((lane) => React.createElement(
             "span",
             {
                 key: `${card.id}-${kind}-${lane}`,
@@ -1555,6 +1623,22 @@ function CombatCardFace({
         { className: cardClasses },
         React.createElement(
             "div",
+            { className: "practice-combat-card-lane-grid" },
+            React.createElement(
+                "div",
+                { className: "practice-combat-card-lane-block" },
+                React.createElement("div", { className: "practice-combat-card-lane-row" }, renderLanePips("attack", attackLanes)),
+                React.createElement("p", { className: "practice-combat-card-lane-label" }, "Attack")
+            ),
+            React.createElement(
+                "div",
+                { className: "practice-combat-card-lane-block" },
+                React.createElement("div", { className: "practice-combat-card-lane-row" }, renderLanePips("defense", defenseLanes)),
+                React.createElement("p", { className: "practice-combat-card-lane-label" }, "Defense")
+            )
+        ),
+        React.createElement(
+            "div",
             { className: "practice-combat-card-header" },
             React.createElement(
                 "div",
@@ -1563,22 +1647,6 @@ function CombatCardFace({
                 React.createElement("strong", { className: "practice-combat-card-name" }, card.name)
             ),
             React.createElement("span", { className: "practice-combat-card-swap-badge" }, `Swap ${formatCombatLane(card.swapLane)}`)
-        ),
-        React.createElement(
-            "div",
-            { className: "practice-combat-card-lane-grid" },
-            React.createElement(
-                "div",
-                { className: "practice-combat-card-lane-block" },
-                React.createElement("p", { className: "practice-combat-card-lane-label" }, "Attack"),
-                React.createElement("div", { className: "practice-combat-card-lane-row" }, renderLanePips("attack", attackLanes))
-            ),
-            React.createElement(
-                "div",
-                { className: "practice-combat-card-lane-block" },
-                React.createElement("p", { className: "practice-combat-card-lane-label" }, "Defense"),
-                React.createElement("div", { className: "practice-combat-card-lane-row" }, renderLanePips("defense", defenseLanes))
-            )
         ),
         React.createElement(
             "div",
@@ -1599,26 +1667,62 @@ function CombatModal({
 }) {
     const leftFighter = combatState.combatants[combatState.attackerId] || null;
     const rightFighter = combatState.combatants[combatState.defenderId] || null;
-    const phase = COMBAT_PHASES[combatState.phaseIndex] || COMBAT_PHASES[0];
+    const [visibleFighterId, setVisibleFighterId] = React.useState(combatState.attackerId);
 
     if (!leftFighter || !rightFighter) {
         return null;
     }
 
+    React.useEffect(() => {
+        setVisibleFighterId((currentVisibleFighterId) => (
+            currentVisibleFighterId === combatState.attackerId || currentVisibleFighterId === combatState.defenderId
+                ? currentVisibleFighterId
+                : combatState.attackerId
+        ));
+    }, [combatState.attackerId, combatState.defenderId]);
+
     const leftCard = leftFighter.selectedCardId ? getCombatCardById(leftFighter, leftFighter.selectedCardId) : null;
     const rightCard = rightFighter.selectedCardId ? getCombatCardById(rightFighter, rightFighter.selectedCardId) : null;
     const leftEffective = leftCard && leftFighter.selectedMode ? getEffectiveCardForCombatant(leftFighter) : null;
     const rightEffective = rightCard && rightFighter.selectedMode ? getEffectiveCardForCombatant(rightFighter) : null;
-    const canAdvanceSelection = Boolean(
-        leftFighter.selectedCardId
-        && rightFighter.selectedCardId
-        && leftFighter.selectedMode
-        && rightFighter.selectedMode
-    );
+    const visibleFighter = visibleFighterId === rightFighter.id ? rightFighter : leftFighter;
+    const hiddenFighter = visibleFighter.id === leftFighter.id ? rightFighter : leftFighter;
+    const visibleSelectedCard = visibleFighter.selectedCardId ? getCombatCardById(visibleFighter, visibleFighter.selectedCardId) : null;
+    const visibleSelectedConfig = visibleSelectedCard ? getEffectiveCardForCombatant(visibleFighter) : null;
+    const visibleAvailableModes = visibleSelectedCard ? getAvailableModes(visibleSelectedCard) : [];
+    const visibleEffective = visibleFighter.id === leftFighter.id ? leftEffective : rightEffective;
+    const visibleCanStumble = Boolean(visibleEffective?.allowsReactionStumble && !visibleFighter.stumbleTriggered);
+    const visibleResolutionSummary = combatState.resolutionSummary
+        ? (visibleFighter.id === leftFighter.id ? combatState.resolutionSummary.leftSummary : combatState.resolutionSummary.rightSummary)
+        : null;
 
     return React.createElement(
         "div",
         { className: "practice-modal-backdrop practice-combat-backdrop", role: "presentation" },
+        React.createElement(
+            "div",
+            { className: "practice-combat-chrome" },
+            React.createElement(
+                "div",
+                { className: "practice-combat-admin-toggle" },
+                React.createElement("span", { className: "practice-combat-admin-label" }, "Admin view"),
+                React.createElement(
+                    "div",
+                    { className: "practice-combat-admin-toggle-buttons" },
+                    [leftFighter, rightFighter].map((fighter) => React.createElement(
+                        "button",
+                        {
+                            key: `combat-view-${fighter.id}`,
+                            className: `practice-combat-admin-button${visibleFighter.id === fighter.id ? " is-active" : ""}`,
+                            type: "button",
+                            onClick: () => setVisibleFighterId(fighter.id),
+                        },
+                        fighter.name
+                    ))
+                )
+            ),
+            React.createElement("h2", { className: "practice-combat-title", id: "practice-combat-title" }, "Combat")
+        ),
         React.createElement(
             "div",
             {
@@ -1627,80 +1731,89 @@ function CombatModal({
                 "aria-modal": "true",
                 "aria-labelledby": "practice-combat-title",
             },
-            React.createElement("p", { className: "practice-modal-kicker" }, `Clash ${combatState.clashNumber}`),
-            React.createElement("h2", { id: "practice-combat-title" }, `${leftFighter.name} vs ${rightFighter.name}`),
             React.createElement(
                 "div",
-                { className: "practice-combat-phase-strip", "aria-label": "Combat phases" },
-                COMBAT_PHASES.map((phaseItem, index) =>
+                { className: "practice-combat-layout" },
+                React.createElement(
+                    "div",
+                    { className: "practice-combat-sidebar" },
+                    React.createElement("p", { className: "practice-modal-kicker practice-combat-sidebar-kicker" }, `Clash ${combatState.clashNumber}`),
                     React.createElement(
                         "div",
-                        {
-                            key: phaseItem.id,
-                            className: `practice-combat-phase-chip${index === combatState.phaseIndex ? " is-active" : ""}${index < combatState.phaseIndex ? " is-complete" : ""}`,
-                        },
-                        React.createElement("span", { className: "practice-combat-phase-count" }, index + 1),
-                        React.createElement("span", { className: "practice-combat-phase-name" }, phaseItem.title)
-                    )
-                )
-            ),
-            React.createElement(
-                "div",
-                { className: "practice-combat-grid" },
-                React.createElement(CombatantSummary, { fighter: leftFighter, toneClassName: "is-left-combatant" }),
-                React.createElement(
-                    "section",
-                    { className: "practice-combat-phase-panel" },
-                    React.createElement("p", { className: "practice-combat-phase-label" }, "Current Clash Step"),
-                    React.createElement("h3", null, phase.title),
-                    React.createElement("p", { className: "practice-combat-phase-copy" }, phase.copy),
-                    combatState.phaseIndex === 0
-                        ? React.createElement(
+                        { className: "practice-combat-phase-strip", "aria-label": "Combat phases" },
+                        COMBAT_PHASES.map((phaseItem, index) =>
+                            React.createElement(
+                                "div",
+                                {
+                                    key: phaseItem.id,
+                                    className: `practice-combat-phase-chip${index === combatState.phaseIndex ? " is-active" : ""}${index < combatState.phaseIndex ? " is-complete" : ""}`,
+                                },
+                                React.createElement("span", { className: "practice-combat-phase-name" }, phaseItem.title)
+                            )
+                        )
+                    ),
+                    React.createElement(CombatSidebarSummary, { fighter: visibleFighter }),
+                    React.createElement(
+                        "aside",
+                        { className: "practice-combat-view-opponent" },
+                        React.createElement("p", { className: "practice-combat-placeholder-label" }, "Opponent"),
+                        React.createElement("strong", null, hiddenFighter.name),
+                        React.createElement(
                             "div",
-                            { className: "practice-combat-selection-grid" },
-                            [leftFighter, rightFighter].map((fighter) => {
-                                const selectedCard = fighter.selectedCardId ? getCombatCardById(fighter, fighter.selectedCardId) : null;
-                                const selectedConfig = selectedCard ? getEffectiveCardForCombatant(fighter) : null;
-                                const availableModes = selectedCard ? getAvailableModes(selectedCard) : [];
-
-                                return React.createElement(
+                            { className: "practice-combat-view-opponent-resources" },
+                            React.createElement(
+                                "div",
+                                { className: "practice-form-points-row", "aria-label": `Hit Points ${hiddenFighter.currentHitPoints ?? 0} of ${hiddenFighter.maxHitPoints ?? 0}` },
+                                Array.from({ length: hiddenFighter.maxHitPoints ?? 0 }).map((_, index) =>
+                                    React.createElement("span", {
+                                        key: `opponent-hit-${hiddenFighter.id}-${index}`,
+                                        className: `practice-hit-point${index < (hiddenFighter.currentHitPoints ?? 0) ? " is-filled" : ""}`,
+                                        "aria-hidden": "true",
+                                    })
+                                )
+                            ),
+                            React.createElement(
+                                "div",
+                                { className: "practice-form-points-row is-character-sheet-form-points", "aria-label": `Form Points ${hiddenFighter.currentFormPoints ?? 0} of ${hiddenFighter.maxFormPoints ?? 0}` },
+                                Array.from({ length: hiddenFighter.maxFormPoints ?? 0 }).map((_, index) =>
+                                    React.createElement("img", {
+                                        key: `opponent-form-${hiddenFighter.id}-${index}`,
+                                        className: `practice-form-knot${index < (hiddenFighter.currentFormPoints ?? 0) ? " is-filled" : ""}`,
+                                        src: CHINESE_KNOT_ICON,
+                                        alt: "",
+                                        "aria-hidden": "true",
+                                    })
+                                )
+                            )
+                        )
+                    )
+                ),
+                React.createElement(
+                    "div",
+                    { className: "practice-combat-grid" },
+                    React.createElement(
+                        "section",
+                        { className: "practice-combat-phase-panel" },
+                        combatState.phaseIndex === 0
+                            ? React.createElement(
+                                "div",
+                                { className: "practice-combat-selection-grid is-single-view" },
+                                React.createElement(
                                     "div",
-                                    { key: `selection-${fighter.id}`, className: "practice-combat-selection-column" },
-                                    React.createElement("p", { className: "practice-combat-placeholder-label" }, fighter.name),
-                                    React.createElement(
-                                        "div",
-                                        { className: "practice-combat-hand-grid" },
-                                        fighter.hand.map((card) =>
-                                            React.createElement(
-                                                "button",
-                                                {
-                                                    key: card.id,
-                                                    className: `practice-combat-card-button${fighter.selectedCardId === card.id ? " is-selected" : ""}`,
-                                                    type: "button",
-                                                    onClick: () => onChooseCard(fighter.id, card.id),
-                                                },
-                                                React.createElement(CombatCardFace, {
-                                                    card,
-                                                    fighter,
-                                                    isSelected: fighter.selectedCardId === card.id,
-                                                    isButton: true,
-                                                })
-                                            )
-                                        )
-                                    ),
-                                    selectedCard
+                                    { className: "practice-combat-selection-column" },
+                                    visibleSelectedCard
                                         ? React.createElement(
                                             "div",
                                             { className: "practice-combat-mode-grid" },
-                                            availableModes.map((mode) =>
+                                            visibleAvailableModes.map((mode) =>
                                                 React.createElement(
                                                     "button",
                                                     {
-                                                        key: `${fighter.id}-${mode.id}`,
-                                                        className: `practice-combat-mode-button${fighter.selectedMode === mode.id ? " is-selected" : ""}`,
+                                                        key: `${visibleFighter.id}-${mode.id}`,
+                                                        className: `practice-combat-mode-button${visibleFighter.selectedMode === mode.id ? " is-selected" : ""}`,
                                                         type: "button",
-                                                        disabled: getModeCost(selectedCard, mode.id) > fighter.currentFormPoints,
-                                                        onClick: () => onChooseMode(fighter.id, mode.id),
+                                                        disabled: getModeCost(visibleSelectedCard, mode.id) > visibleFighter.currentFormPoints,
+                                                        onClick: () => onChooseMode(visibleFighter.id, mode.id),
                                                     },
                                                     React.createElement("strong", null, mode.label),
                                                     React.createElement("span", null, `${mode.copy} Cost ${mode.cost} FP`)
@@ -1708,125 +1821,107 @@ function CombatModal({
                                             )
                                         )
                                         : null,
-                                    selectedConfig
+                                    visibleSelectedConfig
                                         ? React.createElement(
                                             "p",
                                             { className: "practice-combat-phase-copy" },
-                                            `Locked in: Atk ${describeLaneSet(selectedConfig.attackLanes)} / Def ${describeLaneSet(selectedConfig.defenseLanes)}${selectedConfig.keywordActive ? ` / ${selectedConfig.keyword}` : ""}`
+                                            `Locked in: Atk ${describeLaneSet(visibleSelectedConfig.attackLanes)} / Def ${describeLaneSet(visibleSelectedConfig.defenseLanes)}${visibleSelectedConfig.keywordActive ? ` / ${visibleSelectedConfig.keyword}` : ""}`
                                         )
                                         : null
-                                );
-                            })
-                        )
-                        : null,
-                    combatState.phaseIndex === 1 && leftEffective && rightEffective
-                        ? React.createElement(
-                            "div",
-                            { className: "practice-combat-reveal-grid" },
-                            [[leftFighter, leftEffective], [rightFighter, rightEffective]].map(([fighter, config]) =>
-                                React.createElement(
-                                    "article",
-                                    { key: `reveal-${config.card.id}`, className: "practice-combat-placeholder-card" },
-                                    React.createElement("p", { className: "practice-combat-placeholder-label" }, fighter.name),
-                                    React.createElement(CombatCardFace, {
-                                        card: config.card,
-                                        fighter,
-                                        effectiveConfig: config,
-                                    }),
-                                    React.createElement("p", null, config.keywordActive ? `Keyword Active: ${config.keyword}` : "Keyword inactive this clash")
                                 )
                             )
-                        )
-                        : null,
-                    combatState.phaseIndex === 2 && leftEffective && rightEffective
-                        ? React.createElement(
-                            "div",
-                            { className: "practice-combat-reveal-grid" },
-                            [leftFighter, rightFighter].map((fighter) => {
-                                const config = fighter.id === leftFighter.id ? leftEffective : rightEffective;
-                                const canStumble = config.allowsReactionStumble && !fighter.stumbleTriggered;
-
-                                return React.createElement(
+                            : null,
+                        combatState.phaseIndex === 1 && visibleEffective
+                            ? React.createElement(
+                                "div",
+                                { className: "practice-combat-reveal-grid is-single-view" },
+                                React.createElement(
+                                    "article",
+                                    { className: "practice-combat-placeholder-card" },
+                                    React.createElement(CombatCardFace, {
+                                        card: visibleEffective.card,
+                                        fighter: visibleFighter,
+                                        effectiveConfig: visibleEffective,
+                                    }),
+                                    React.createElement("p", null, visibleEffective.keywordActive ? `Keyword Active: ${visibleEffective.keyword}` : "Keyword inactive this clash")
+                                )
+                            )
+                            : null,
+                        combatState.phaseIndex === 2 && visibleEffective
+                            ? React.createElement(
+                                "div",
+                                { className: "practice-combat-reveal-grid is-single-view" },
+                                React.createElement(
                                     "div",
-                                    { key: `reaction-${fighter.id}`, className: "practice-combat-placeholder-card" },
-                                    React.createElement("p", { className: "practice-combat-placeholder-label" }, fighter.name),
-                                    React.createElement("p", null, canStumble ? "Stumble may swap this revealed card for a random different card." : "No optional reaction remains for this fighter in this clash."),
-                                    canStumble
+                                    { className: "practice-combat-placeholder-card" },
+                                    React.createElement("p", null, visibleCanStumble ? "Stumble may swap this revealed card for a random different card." : "No optional reaction remains for this fighter in this clash."),
+                                    visibleCanStumble
                                         ? React.createElement(
                                             "button",
                                             {
                                                 className: "practice-combat-button is-primary",
                                                 type: "button",
-                                                onClick: () => onTriggerStumble(fighter.id),
+                                                onClick: () => onTriggerStumble(visibleFighter.id),
                                             },
                                             "Trigger Stumble"
                                         )
                                         : null
-                                );
-                            })
-                        )
-                        : null,
-                    combatState.phaseIndex === 3 && combatState.resolutionSummary
+                                )
+                            )
+                            : null,
+                        combatState.phaseIndex === 3 && combatState.resolutionSummary
+                            ? React.createElement(
+                                "div",
+                                { className: "practice-combat-placeholder-grid is-single-view" },
+                                React.createElement(
+                                    "div",
+                                    { className: "practice-combat-placeholder-card" },
+                                    React.createElement("p", null, visibleResolutionSummary)
+                                )
+                            )
+                            : null,
+                        combatState.phaseIndex === 4
+                            ? React.createElement(
+                                "div",
+                                { className: "practice-combat-placeholder-grid is-single-view" },
+                                React.createElement(
+                                    "div",
+                                    { className: "practice-combat-placeholder-card" },
+                                    React.createElement("p", null, "Technique activation is not implemented yet, but the clash loop and deck exhaustion rules are now live."),
+                                    React.createElement("p", { className: "practice-combat-phase-copy practice-combat-other-status" }, combatState.clashLog[0] || "No clash events recorded yet.")
+                                )
+                            )
+                            : null
+                    ),
+                    combatState.phaseIndex === 0
                         ? React.createElement(
                             "div",
-                            { className: "practice-combat-placeholder-grid" },
+                            { className: "practice-combat-hand-dock" },
+                            React.createElement("p", { className: "practice-combat-placeholder-label" }, `${visibleFighter.name} Hand`),
                             React.createElement(
                                 "div",
-                                { className: "practice-combat-placeholder-card" },
-                                React.createElement("p", { className: "practice-combat-placeholder-label" }, leftFighter.name),
-                                React.createElement("p", null, combatState.resolutionSummary.leftSummary)
-                            ),
-                            React.createElement(
-                                "div",
-                                { className: "practice-combat-placeholder-card" },
-                                React.createElement("p", { className: "practice-combat-placeholder-label" }, rightFighter.name),
-                                React.createElement("p", null, combatState.resolutionSummary.rightSummary)
+                                { className: "practice-combat-hand-grid" },
+                                visibleFighter.hand.map((card) =>
+                                    React.createElement(
+                                        "button",
+                                        {
+                                            key: card.id,
+                                            className: `practice-combat-card-button${visibleFighter.selectedCardId === card.id ? " is-selected" : ""}`,
+                                            type: "button",
+                                            onClick: () => onChooseCard(visibleFighter.id, card.id),
+                                        },
+                                        React.createElement(CombatCardFace, {
+                                            card,
+                                            fighter: visibleFighter,
+                                            isSelected: visibleFighter.selectedCardId === card.id,
+                                            isButton: true,
+                                        })
+                                    )
+                                )
                             )
                         )
-                        : null,
-                    combatState.phaseIndex === 4
-                        ? React.createElement(
-                            "div",
-                            { className: "practice-combat-placeholder-grid" },
-                            React.createElement(
-                                "div",
-                                { className: "practice-combat-placeholder-card" },
-                                React.createElement("p", { className: "practice-combat-placeholder-label" }, "Activation"),
-                                React.createElement("p", null, "Technique activation is not implemented yet, but the clash loop and deck exhaustion rules are now live.")
-                            ),
-                            React.createElement(
-                                "div",
-                                { className: "practice-combat-placeholder-card" },
-                                React.createElement("p", { className: "practice-combat-placeholder-label" }, "Clash Log"),
-                                React.createElement("p", null, combatState.clashLog[0] || "No clash events recorded yet.")
-                            )
-                        )
-                        : null,
-                    React.createElement(
-                        "div",
-                        { className: "practice-combat-actions" },
-                        React.createElement(
-                            "button",
-                            {
-                                className: "practice-combat-button is-secondary",
-                                type: "button",
-                                onClick: onClose,
-                            },
-                            "Close Combat"
-                        ),
-                        React.createElement(
-                            "button",
-                            {
-                                className: "practice-combat-button is-primary",
-                                type: "button",
-                                disabled: combatState.phaseIndex === 0 && !canAdvanceSelection,
-                                onClick: onAdvancePhase,
-                            },
-                            combatState.phaseIndex === COMBAT_PHASES.length - 1 ? "Next Clash" : "Next Phase"
-                        )
-                    )
-                ),
-                React.createElement(CombatantSummary, { fighter: rightFighter, toneClassName: "is-right-combatant" })
+                        : null
+                )
             )
         )
     );
