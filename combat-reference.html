@@ -16,7 +16,11 @@
             --muted: #b8c3d7;
             --accent: #d7b372;
             --line: rgba(255, 255, 255, 0.1);
-            --red: #ce584f;
+            --danger: #dd7c12;
+            --danger-strong: #f59e0b;
+            --danger-deep: #9a5200;
+            --danger-soft: rgba(245, 158, 11, 0.12);
+            --danger-ink: #2f1900;
             --gray: #737b8b;
         }
 
@@ -136,8 +140,8 @@
         }
 
         .slot.attack {
-            background: var(--red);
-            color: #2d0d08;
+            background: var(--danger);
+            color: var(--danger-ink);
         }
 
         .slot.defense {
@@ -263,11 +267,11 @@
         }
 
         .reference-mini-slot.attack {
-            background: rgba(206, 88, 79, 0.08);
+            background: var(--danger-soft);
         }
 
         .reference-mini-slot.attack.is-filled {
-            background: #ce584f;
+            background: var(--danger);
             opacity: 1;
         }
 
@@ -393,7 +397,7 @@
         .reference-mini-mode strong.is-keyword-flurry {
             font-family: "ZCOOL XiaoWei", serif;
             font-size: 1.06rem;
-            color: #973840;
+            color: #9a5200;
         }
 
         .reference-mini-mode strong.is-keyword-endure {
@@ -425,7 +429,7 @@
         }
 
         .reference-mini-dot.attack.is-filled {
-            background: #ce584f;
+            background: var(--danger);
         }
 
         .reference-mini-dot.defense.is-filled {

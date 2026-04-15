@@ -1533,6 +1533,21 @@ function getAvailableModes(card) {
     ];
 }
 
+function getPrintedModes(card, fighter) {
+    if (card.isSpecial) {
+        return [
+            { id: COMBAT_MODE_SWAP_ATTACK, text: `Swap Attack - ${formatCombatLane(card.swapLane)}` },
+            { id: COMBAT_MODE_SWAP_DEFENSE, text: `Swap Defense - ${formatCombatLane(card.swapLane)}` },
+        ];
+    }
+
+    return [
+        { id: COMBAT_MODE_KEYWORD, text: fighter?.keyword || "School Special", keyword: fighter?.keyword || "" },
+        { id: COMBAT_MODE_SWAP_ATTACK, text: `Swap Attack - ${formatCombatLane(card.swapLane)}` },
+        { id: COMBAT_MODE_SWAP_DEFENSE, text: `Swap Defense - ${formatCombatLane(card.swapLane)}` },
+    ];
+}
+
 function resolveAttackAgainstDefender(attackerConfig, defenderConfig) {
     if (defenderConfig.ignoresIncomingAttack) {
         return { hits: 0, blocks: 0, ignored: attackerConfig.attackLanes.length };
@@ -1593,7 +1608,6 @@ function CombatCardFace({
     const attackLanes = effectiveConfig?.attackLanes || [card.attack];
     const defenseLanes = effectiveConfig?.defenseLanes || [card.defense];
     const keywordActive = Boolean(effectiveConfig?.keywordActive || card.isSpecial);
-    const keywordLabel = fighter?.keyword || card.keyword || "Keyword";
     const cardClasses = [
         "practice-combat-card-face",
         isSelected ? "is-selected" : "",
@@ -1618,6 +1632,11 @@ function CombatCardFace({
         ));
     }
 
+    const boxCount = card.isSpecial ? 2 : 3;
+    const keywordClassName = fighter?.keyword
+        ? ` practice-combat-card-box-label--${fighter.keyword.toLowerCase()}`
+        : "";
+
     return React.createElement(
         "div",
         { className: cardClasses },
@@ -1637,6 +1656,19 @@ function CombatCardFace({
                 React.createElement("p", { className: "practice-combat-card-lane-label" }, "DEF")
             )
         ),
+        card.isSpecial
+            ? React.createElement(
+                "div",
+                { className: "practice-combat-card-special-keyword-row" },
+                React.createElement(
+                    "span",
+                    {
+                        className: `practice-combat-card-special-keyword${keywordClassName}`,
+                    },
+                    fighter?.keyword || ""
+                )
+            )
+            : null,
         React.createElement(
             "div",
             { className: "practice-combat-card-header" },
@@ -1645,13 +1677,47 @@ function CombatCardFace({
                 { className: "practice-combat-card-title-block" },
                 React.createElement("p", { className: "practice-combat-card-eyebrow" }, card.isSpecial ? "Special Card" : fighter?.displayName || fighter?.name || "Combat Card"),
                 React.createElement("strong", { className: "practice-combat-card-name" }, card.name)
-            ),
-            React.createElement("span", { className: "practice-combat-card-swap-badge" }, `Swap ${formatCombatLane(card.swapLane)}`)
+            )
         ),
         React.createElement(
             "div",
             { className: "practice-combat-card-footer" },
-            React.createElement("span", { className: "practice-combat-card-keyword" }, keywordActive ? `${keywordLabel} active` : keywordLabel)
+            React.createElement(
+                "div",
+                { className: "practice-combat-card-box-stack", "aria-hidden": "true" },
+                /* Intentional fixed scaffold: normal cards show 3 boxes, special cards show 2. */
+                Array.from({ length: boxCount }, (_, index) => {
+                    const isTopBox = !card.isSpecial && index === 0;
+                    const isBottomBox = index === boxCount - 1;
+                    const isSecondFromBottomBox = index === boxCount - 2;
+                    const boxLabel = isBottomBox
+                        ? "Swap Defense"
+                        : (isSecondFromBottomBox ? "Swap Attack" : (isTopBox ? (fighter?.keyword || "") : ""));
+
+                    return React.createElement(
+                    "div",
+                    {
+                        key: `${card.id}-box-${index}`,
+                        className: "practice-combat-card-box",
+                    },
+                    React.createElement("img", {
+                        className: "practice-combat-card-box-icon",
+                        src: CHINESE_KNOT_ICON,
+                        alt: "",
+                        "aria-hidden": "true",
+                    }),
+                    boxLabel
+                        ? React.createElement(
+                            "span",
+                            {
+                                className: `practice-combat-card-box-label${isTopBox ? keywordClassName : ""}`,
+                            },
+                            boxLabel
+                        )
+                        : null
+                );
+                })
+            )
         )
     );
 }
