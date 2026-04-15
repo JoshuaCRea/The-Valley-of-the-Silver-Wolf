@@ -1848,8 +1848,18 @@ function CombatModal({
                     combatState.phaseIndex === 0
                         ? React.createElement(
                             "div",
-                            { className: "practice-combat-hand-dock" },
-                            React.createElement("p", { className: "practice-combat-placeholder-label" }, `${visibleFighter.name} Hand`),
+                            { className: `practice-combat-hand-dock${visibleFighter.selectedCardId ? " has-selection" : ""}` },
+                            visibleFighter.selectedCardId
+                                ? React.createElement(
+                                    "button",
+                                    {
+                                        className: "practice-combat-clash-button",
+                                        type: "button",
+                                        onClick: onAdvancePhase,
+                                    },
+                                    "Clash!"
+                                )
+                                : null,
                             React.createElement(
                                 "div",
                                 { className: `practice-combat-hand-grid${visibleFighter.selectedCardId ? " has-selection" : ""}` },
@@ -1874,18 +1884,7 @@ function CombatModal({
                                         })
                                     )
                                 )
-                            ),
-                            visibleFighter.selectedCardId
-                                ? React.createElement(
-                                    "button",
-                                    {
-                                        className: "practice-combat-clash-button",
-                                        type: "button",
-                                        onClick: onAdvancePhase,
-                                    },
-                                    "Clash!"
-                                )
-                                : null
+                            )
                         )
                         : null
                 )
@@ -3206,6 +3205,22 @@ function PracticeGame() {
 
             if (!combatant || !selectedCard) {
                 return existing;
+            }
+
+            if (combatant.selectedCardId) {
+                return {
+                    ...existing,
+                    combatants: {
+                        ...existing.combatants,
+                        [fighterId]: {
+                            ...combatant,
+                            selectedCardId: null,
+                            effectiveCardId: null,
+                            selectedMode: null,
+                            stumbleTriggered: false,
+                        },
+                    },
+                };
             }
 
             const defaultModeId = selectedCard.isSpecial ? COMBAT_MODE_NORMAL : COMBAT_MODE_KEYWORD;

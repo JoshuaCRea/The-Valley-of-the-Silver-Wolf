@@ -2513,8 +2513,14 @@ td {
    position: relative;
    z-index: 8;
    overflow: visible;
-   margin-top: -20px;
+   margin-top: -72px;
+   padding-top: 0;
    justify-items: center;
+}
+
+.practice-combat-hand-dock.has-selection {
+   gap: 0;
+   padding-top: 0;
 }
 
 .practice-combat-hand-grid {
@@ -2522,7 +2528,7 @@ td {
    justify-content: center;
    align-items: end;
    gap: 0;
-   padding: 18px 96px 48px;
+   padding: 0 96px 48px;
    overflow: visible;
    isolation: isolate;
 }
@@ -2552,6 +2558,9 @@ td {
 .practice-combat-mode-button.is-selected {
    border-color: rgba(215, 179, 114, 0.72);
    background: rgba(215, 179, 114, 0.12);
+   box-shadow:
+      0 0 0 2px rgba(246, 219, 145, 0.42),
+      0 0 24px rgba(215, 179, 114, 0.45);
 }
 
 .practice-combat-card-button {
@@ -2560,6 +2569,7 @@ td {
    min-width: 138px;
    margin-left: -26px;
    transform-origin: center bottom;
+   transform: translate3d(0, -42px, 0) rotate(0deg) scale(0.82);
    transition:
       transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 220ms ease,
@@ -2574,23 +2584,23 @@ td {
 }
 
 .practice-combat-hand-grid:hover .practice-combat-card-button:nth-child(1):not(:hover):not(:focus-visible) {
-   transform: translate3d(-252px, -108px, 0) rotate(-12deg) scale(1.54);
+   transform: translate3d(-210px, -136px, 0) rotate(-12deg) scale(1.18);
 }
 
 .practice-combat-hand-grid:hover .practice-combat-card-button:nth-child(2):not(:hover):not(:focus-visible) {
-   transform: translate3d(-126px, -152px, 0) rotate(-6deg) scale(1.54);
+   transform: translate3d(-108px, -174px, 0) rotate(-6deg) scale(1.18);
 }
 
 .practice-combat-hand-grid:hover .practice-combat-card-button:nth-child(3):not(:hover):not(:focus-visible) {
-   transform: translate3d(0, -176px, 0) rotate(0deg) scale(1.58);
+   transform: translate3d(0, -194px, 0) rotate(0deg) scale(1.22);
 }
 
 .practice-combat-hand-grid:hover .practice-combat-card-button:nth-child(4):not(:hover):not(:focus-visible) {
-   transform: translate3d(126px, -152px, 0) rotate(6deg) scale(1.54);
+   transform: translate3d(108px, -174px, 0) rotate(6deg) scale(1.18);
 }
 
 .practice-combat-hand-grid:hover .practice-combat-card-button:nth-child(5):not(:hover):not(:focus-visible) {
-   transform: translate3d(252px, -108px, 0) rotate(12deg) scale(1.54);
+   transform: translate3d(210px, -136px, 0) rotate(12deg) scale(1.18);
 }
 
 .practice-combat-card-button:hover,
@@ -2600,49 +2610,60 @@ td {
 
 .practice-combat-hand-grid:hover .practice-combat-card-button:hover,
 .practice-combat-hand-grid:hover .practice-combat-card-button:focus-visible {
-   transform: translate3d(var(--practice-hover-x, 0), var(--practice-hover-y, -120px), 0) rotate(var(--practice-hover-rotate, 0deg)) scale(1.72);
+   transform: translate3d(var(--practice-hover-x, 0), var(--practice-hover-y, -120px), 0) rotate(var(--practice-hover-rotate, 0deg)) scale(1.39);
 }
 
 .practice-combat-card-button:nth-child(1) {
-   --practice-hover-x: -270px;
-   --practice-hover-y: -124px;
+   --practice-hover-x: -230px;
+   --practice-hover-y: -148px;
    --practice-hover-rotate: -12deg;
+   --practice-selected-x: 104px;
 }
 
 .practice-combat-card-button:nth-child(2) {
-   --practice-hover-x: -140px;
-   --practice-hover-y: -172px;
+   --practice-hover-x: -120px;
+   --practice-hover-y: -188px;
    --practice-hover-rotate: -6deg;
+   --practice-selected-x: 52px;
 }
 
 .practice-combat-card-button:nth-child(3) {
    --practice-hover-x: 0px;
-   --practice-hover-y: -196px;
+   --practice-hover-y: -210px;
    --practice-hover-rotate: 0deg;
+   --practice-selected-x: 0px;
 }
 
 .practice-combat-card-button:nth-child(4) {
-   --practice-hover-x: 140px;
-   --practice-hover-y: -172px;
+   --practice-hover-x: 120px;
+   --practice-hover-y: -188px;
    --practice-hover-rotate: 6deg;
+   --practice-selected-x: -52px;
 }
 
 .practice-combat-card-button:nth-child(5) {
-   --practice-hover-x: 270px;
-   --practice-hover-y: -124px;
+   --practice-hover-x: 230px;
+   --practice-hover-y: -148px;
    --practice-hover-rotate: 12deg;
+   --practice-selected-x: -104px;
 }
 
 .practice-combat-hand-grid.has-selection .practice-combat-card-button:not(.is-selected) {
    margin-left: -26px;
-   transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+   transform: translate3d(0, -42px, 0) rotate(0deg) scale(0.82);
    opacity: 1;
+   z-index: calc(10 + var(--practice-card-index, 0));
+}
+
+.practice-combat-hand-grid.has-selection:hover .practice-combat-card-button:not(.is-selected):not(:focus-visible),
+.practice-combat-hand-grid.has-selection:hover .practice-combat-card-button:not(.is-selected):not(:hover):not(:focus-visible) {
+   transform: translate3d(0, -42px, 0) rotate(0deg) scale(0.82);
    z-index: calc(10 + var(--practice-card-index, 0));
 }
 
 .practice-combat-hand-grid.has-selection .practice-combat-card-button:not(.is-selected):hover,
 .practice-combat-hand-grid.has-selection .practice-combat-card-button:not(.is-selected):focus-visible {
-   transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+   transform: translate3d(0, -42px, 0) rotate(0deg) scale(0.82);
    z-index: calc(10 + var(--practice-card-index, 0));
 }
 
@@ -2653,26 +2674,7 @@ td {
 .practice-combat-hand-grid.has-selection .practice-combat-card-button.is-selected {
    opacity: 1;
    z-index: 80;
-}
-
-.practice-combat-hand-grid.has-selection .practice-combat-card-button.is-selected:nth-child(1) {
-   transform: translate3d(120px, -198px, 0) rotate(-6deg) scale(1.46);
-}
-
-.practice-combat-hand-grid.has-selection .practice-combat-card-button.is-selected:nth-child(2) {
-   transform: translate3d(60px, -198px, 0) rotate(-3deg) scale(1.46);
-}
-
-.practice-combat-hand-grid.has-selection .practice-combat-card-button.is-selected:nth-child(3) {
-   transform: translate3d(0, -198px, 0) rotate(0deg) scale(1.46);
-}
-
-.practice-combat-hand-grid.has-selection .practice-combat-card-button.is-selected:nth-child(4) {
-   transform: translate3d(-60px, -198px, 0) rotate(3deg) scale(1.46);
-}
-
-.practice-combat-hand-grid.has-selection .practice-combat-card-button.is-selected:nth-child(5) {
-   transform: translate3d(-120px, -198px, 0) rotate(6deg) scale(1.46);
+   transform: translate3d(var(--practice-selected-x, 0px), -352px, 0) rotate(0deg) scale(1.36);
 }
 
 .practice-combat-hand-grid.has-selection .practice-combat-card-button.is-selected:hover,
@@ -2681,10 +2683,9 @@ td {
 }
 
 .practice-combat-clash-button {
-   position: absolute;
-   left: 50%;
-   bottom: 100%;
-   transform: translate(-50%, -138px);
+   position: relative;
+   margin-bottom: 30px;
+   transform: translateY(0);
    z-index: 90;
    border: 1px solid rgba(134, 218, 115, 0.95);
    border-radius: 999px;
@@ -2703,7 +2704,20 @@ td {
 
 .practice-combat-clash-button:hover,
 .practice-combat-clash-button:focus-visible {
-   transform: translate(-50%, -142px) scale(1.03);
+   transform: translateY(-4px) scale(1.03);
+}
+
+.practice-combat-hand-dock.has-selection .practice-combat-clash-button {
+   position: absolute;
+   left: 50%;
+   top: -214px;
+   margin-bottom: 0;
+   transform: translateX(-50%);
+}
+
+.practice-combat-hand-dock.has-selection .practice-combat-clash-button:hover,
+.practice-combat-hand-dock.has-selection .practice-combat-clash-button:focus-visible {
+   transform: translateX(-50%) translateY(-4px) scale(1.03);
 }
 
 .practice-combat-card-button:disabled,
@@ -2758,6 +2772,7 @@ td {
       0 22px 42px rgba(0, 0, 0, 0.34);
 }
 
+
 .practice-combat-card-face.is-selected,
 .practice-combat-card-button.is-selected .practice-combat-card-face {
    border-color: rgba(255, 202, 86, 1);
@@ -2769,6 +2784,7 @@ td {
       0 0 28px rgba(255, 203, 93, 0.34),
       0 16px 28px rgba(0, 0, 0, 0.2);
 }
+
 
 .practice-combat-card-face.is-special {
    background:
@@ -2883,7 +2899,7 @@ td {
 .practice-combat-card-lane-block {
    justify-items: center;
    text-align: center;
-   width: max-content;
+   width: 100%;
 }
 
 .practice-combat-card-lane.attack.is-filled {
@@ -2900,6 +2916,8 @@ td {
 
 .practice-combat-card-footer {
    align-items: center;
+   align-self: end;
+   justify-content: center;
 }
 
 .practice-combat-card-title {
