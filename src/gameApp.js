@@ -25,6 +25,7 @@ const HEAL_ICON = new URL("./images/medicine-pharmacy-svgrepo-com.svg", import.m
 const QUEST_ICON = new URL("./images/business-card-svgrepo-com.svg", import.meta.url).href;
 const MOUNTAIN_ICON = new URL("./images/mountain-1-svgrepo-com.svg", import.meta.url).href;
 const CHINESE_KNOT_ICON = new URL("./images/chinese-knot-svgrepo-com.svg", import.meta.url).href;
+const KNOT_BREAK_SOUND = new URL("./sounds/Knot Break.wav", import.meta.url).href;
 const MODAL_BACKGROUND = new URL("./images/modal-background.jpeg", import.meta.url).href;
 const TOWN_STAR_POSITIONS = [
     { x: "50%", y: "0%" },
@@ -1285,21 +1286,107 @@ function CombatSidebarSummary({ fighter }) {
                 "div",
                 { className: "practice-combatant-resource" },
                 React.createElement("p", { className: "practice-combatant-resource-label" }, "Form Points"),
-                React.createElement(
-                    "div",
-                    { className: "practice-form-points-row is-character-sheet-form-points", "aria-label": `Form Points ${fighter.currentFormPoints ?? 0} of ${fighter.maxFormPoints ?? 0}` },
-                    Array.from({ length: fighter.maxFormPoints ?? 0 }).map((_, index) =>
-                        React.createElement("img", {
-                            key: `sidebar-form-${fighter.id}-${index}`,
-                            className: `practice-form-knot${index < (fighter.currentFormPoints ?? 0) ? " is-filled" : ""}`,
-                            src: CHINESE_KNOT_ICON,
-                            alt: "",
-                            "aria-hidden": "true",
-                        })
-                    )
-                )
+                React.createElement(AnimatedFormKnotRow, {
+                    fighterId: fighter.id,
+                    count: fighter.currentFormPoints ?? 0,
+                    maxCount: fighter.maxFormPoints ?? 0,
+                    triggerSeq: fighter.formSpendFxSeq ?? 0,
+                })
             )
         )
+    );
+}
+
+function AnimatedFormKnotRow({
+    fighterId,
+    count = 0,
+    maxCount = 0,
+    className = "",
+    triggerSeq = 0,
+}) {
+    const [displayCount, setDisplayCount] = React.useState(count);
+    const [spendingIndex, setSpendingIndex] = React.useState(null);
+    const previousCountRef = React.useRef(count);
+    const timeoutRef = React.useRef(null);
+
+    React.useEffect(() => {
+        const previousCount = previousCountRef.current;
+
+        if (triggerSeq && previousCount > count) {
+            window.clearTimeout(timeoutRef.current);
+            setDisplayCount(previousCount);
+            setSpendingIndex(previousCount - 1);
+            timeoutRef.current = window.setTimeout(() => {
+                setDisplayCount(count);
+                setSpendingIndex(null);
+                timeoutRef.current = null;
+            }, 500);
+        } else {
+            setDisplayCount(count);
+            setSpendingIndex(null);
+        }
+
+        previousCountRef.current = count;
+    }, [count, triggerSeq]);
+
+    React.useEffect(() => () => {
+        window.clearTimeout(timeoutRef.current);
+    }, []);
+
+    return React.createElement(
+        "div",
+        {
+            className: `practice-form-points-row is-character-sheet-form-points${className ? ` ${className}` : ""}`,
+            "aria-label": `Form Points ${count} of ${maxCount}`,
+        },
+        Array.from({ length: displayCount }).map((_, index) =>
+            React.createElement("img", {
+                key: `animated-form-${fighterId}-${triggerSeq}-${index}`,
+                className: `practice-form-knot is-filled${index === spendingIndex ? " is-spending" : ""}`,
+                src: CHINESE_KNOT_ICON,
+                alt: "",
+                "aria-hidden": "true",
+            })
+        )
+    );
+}
+
+function CombatCardSpendBurst({ triggerSeq = 0 }) {
+    const [isVisible, setIsVisible] = React.useState(false);
+    const previousTriggerSeqRef = React.useRef(triggerSeq);
+
+    React.useEffect(() => {
+        if (!triggerSeq || triggerSeq <= previousTriggerSeqRef.current) {
+            previousTriggerSeqRef.current = triggerSeq;
+            return undefined;
+        }
+
+        previousTriggerSeqRef.current = triggerSeq;
+        setIsVisible(true);
+        const timeoutId = window.setTimeout(() => {
+            setIsVisible(false);
+        }, 1250);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [triggerSeq]);
+
+    if (!isVisible) {
+        return null;
+    }
+
+    return React.createElement(
+        "div",
+        { className: "practice-combat-card-spend-burst", "aria-hidden": "true" },
+        React.createElement("img", {
+            className: "practice-combat-card-spend-burst-half is-left",
+            src: CHINESE_KNOT_ICON,
+            alt: "",
+        }),
+        React.createElement("img", {
+            className: "practice-combat-card-spend-burst-half is-right",
+            src: CHINESE_KNOT_ICON,
+            alt: "",
+        })
     );
 }
 
@@ -1420,6 +1507,7 @@ function createCombatantState(player) {
         currentHitPoints: player.hitPoints ?? 3,
         maxFormPoints: player.formPoints ?? 2,
         currentFormPoints: player.formPoints ?? 2,
+        formSpendFxSeq: 0,
         drawPile: openingDraw.remainingDrawPile,
         hand: openingDraw.drawnCards,
         discard: [],
@@ -1429,6 +1517,24 @@ function createCombatantState(player) {
         stumbleTriggered: false,
         reactionLocked: false,
     };
+}
+
+function areCombatantsReadyToReveal(combatState) {
+    if (!combatState) {
+        return false;
+    }
+
+    const leftCombatant = combatState.combatants[combatState.attackerId];
+    const rightCombatant = combatState.combatants[combatState.defenderId];
+
+    return Boolean(
+        leftCombatant?.selectedCardId
+        && rightCombatant?.selectedCardId
+        && leftCombatant?.selectedMode
+        && rightCombatant?.selectedMode
+        && leftCombatant?.reactionLocked
+        && rightCombatant?.reactionLocked
+    );
 }
 
 function startCombatEncounter(players, attackerId, defenderId) {
@@ -1533,6 +1639,18 @@ function getAvailableModes(card) {
     ];
 }
 
+function canModifySelectedCard(card, selectedMode) {
+    if (!card) {
+        return false;
+    }
+
+    if (card.isSpecial) {
+        return selectedMode === COMBAT_MODE_NORMAL;
+    }
+
+    return selectedMode === null;
+}
+
 function getPrintedModes(card, fighter) {
     if (card.isSpecial) {
         return [
@@ -1604,15 +1722,21 @@ function CombatCardFace({
     effectiveConfig = null,
     isSelected = false,
     isButton = false,
+    selectedMode = null,
+    onChooseMode = null,
+    spendBurstSeq = 0,
+    isLocked = false,
 }) {
     const attackLanes = effectiveConfig?.attackLanes || [card.attack];
     const defenseLanes = effectiveConfig?.defenseLanes || [card.defense];
     const keywordActive = Boolean(effectiveConfig?.keywordActive || card.isSpecial);
+    const isInteractive = Boolean(isSelected && !isLocked && onChooseMode && canModifySelectedCard(card, selectedMode));
     const cardClasses = [
         "practice-combat-card-face",
         isSelected ? "is-selected" : "",
         card.isSpecial ? "is-special" : "",
         keywordActive ? "is-keyword-active" : "",
+        isInteractive ? "is-interactive" : "",
         isButton ? "is-button-face" : "",
     ].filter(Boolean).join(" ");
 
@@ -1621,102 +1745,207 @@ function CombatCardFace({
             ? COMBAT_LANES
             : COMBAT_LANES.slice().reverse();
 
-        return laneOrder.map((lane) => React.createElement(
-            "span",
-            {
-                key: `${card.id}-${kind}-${lane}`,
-                className: `practice-combat-card-lane ${kind}${lanes.includes(lane) ? " is-filled" : ""}`,
-                "aria-hidden": "true",
-            },
-            formatCombatLane(lane).charAt(0)
-        ));
+        return laneOrder.map((lane) => {
+            const isSwapLane = lane === card.swapLane;
+            const modeId = kind === "attack" ? COMBAT_MODE_SWAP_ATTACK : COMBAT_MODE_SWAP_DEFENSE;
+            const isClickable = isInteractive && isSwapLane;
+            const showSwapTarget = isSwapLane && (!isSelected || canModifySelectedCard(card, selectedMode));
+            const laneClassName = `practice-combat-card-lane ${kind}${lanes.includes(lane) ? " is-filled" : ""}${showSwapTarget ? " is-swap-target" : ""}${isClickable ? " is-clickable-target" : ""}${selectedMode === modeId ? " is-mode-selected" : ""}`;
+
+            if (isClickable) {
+                return React.createElement(
+                    "span",
+                    {
+                        key: `${card.id}-${kind}-${lane}`,
+                        className: laneClassName,
+                        role: "button",
+                        tabIndex: 0,
+                        onClick: (event) => {
+                            event.stopPropagation();
+                            onChooseMode(modeId);
+                        },
+                        onKeyDown: (event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                onChooseMode(modeId);
+                            }
+                        },
+                    },
+                    formatCombatLane(lane).charAt(0)
+                );
+            }
+
+            return React.createElement(
+                "span",
+                {
+                    key: `${card.id}-${kind}-${lane}`,
+                    className: laneClassName,
+                    "aria-hidden": "true",
+                },
+                formatCombatLane(lane).charAt(0)
+            );
+        });
     }
 
     const boxCount = card.isSpecial ? 2 : 3;
     const keywordClassName = fighter?.keyword
         ? ` practice-combat-card-box-label--${fighter.keyword.toLowerCase()}`
         : "";
+    const [isSpendBurstVisible, setIsSpendBurstVisible] = React.useState(false);
+    const spendAudioRef = React.useRef(null);
+    const previousSpendBurstSeqRef = React.useRef(spendBurstSeq);
+
+    React.useEffect(() => {
+        spendAudioRef.current = new window.Audio(KNOT_BREAK_SOUND);
+        spendAudioRef.current.preload = "auto";
+
+        return () => {
+            if (spendAudioRef.current) {
+                spendAudioRef.current.pause();
+                spendAudioRef.current = null;
+            }
+        };
+    }, []);
+
+    React.useEffect(() => {
+        if (!spendBurstSeq || spendBurstSeq <= previousSpendBurstSeqRef.current) {
+            previousSpendBurstSeqRef.current = spendBurstSeq;
+            return undefined;
+        }
+
+        previousSpendBurstSeqRef.current = spendBurstSeq;
+        setIsSpendBurstVisible(true);
+        if (spendAudioRef.current) {
+            spendAudioRef.current.currentTime = 0;
+            spendAudioRef.current.play().catch(() => {});
+        }
+        const timeoutId = window.setTimeout(() => {
+            setIsSpendBurstVisible(false);
+        }, 1250);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [spendBurstSeq]);
 
     return React.createElement(
         "div",
-        { className: cardClasses },
+        { className: `${cardClasses}${isSpendBurstVisible ? " is-spend-burst-visible" : ""}` },
         React.createElement(
             "div",
-            { className: "practice-combat-card-lane-grid" },
+            { className: "practice-combat-card-content" },
             React.createElement(
                 "div",
-                { className: "practice-combat-card-lane-block" },
-                React.createElement("div", { className: "practice-combat-card-lane-row" }, renderLanePips("attack", attackLanes)),
-                React.createElement("p", { className: "practice-combat-card-lane-label" }, "ATK")
+                { className: "practice-combat-card-lane-grid" },
+                React.createElement(
+                    "div",
+                    { className: "practice-combat-card-lane-block" },
+                    React.createElement("div", { className: "practice-combat-card-lane-row" }, renderLanePips("attack", attackLanes)),
+                    React.createElement("p", { className: "practice-combat-card-lane-label" }, "ATK")
+                ),
+                React.createElement(
+                    "div",
+                    { className: "practice-combat-card-lane-block" },
+                    React.createElement("div", { className: "practice-combat-card-lane-row" }, renderLanePips("defense", defenseLanes)),
+                    React.createElement("p", { className: "practice-combat-card-lane-label" }, "DEF")
+                )
+            ),
+            card.isSpecial
+                ? React.createElement(
+                    "div",
+                    { className: "practice-combat-card-special-keyword-row" },
+                    React.createElement(
+                        "span",
+                        {
+                            className: `practice-combat-card-special-keyword${keywordClassName}`,
+                        },
+                        fighter?.keyword || ""
+                    )
+                )
+                : null,
+            React.createElement(
+                "div",
+                { className: "practice-combat-card-header" },
+                React.createElement(
+                    "div",
+                    { className: "practice-combat-card-title-block" },
+                    React.createElement("p", { className: "practice-combat-card-eyebrow" }, card.isSpecial ? "Special Card" : fighter?.displayName || fighter?.name || "Combat Card"),
+                    React.createElement("strong", { className: "practice-combat-card-name" }, card.name)
+                )
             ),
             React.createElement(
                 "div",
-                { className: "practice-combat-card-lane-block" },
-                React.createElement("div", { className: "practice-combat-card-lane-row" }, renderLanePips("defense", defenseLanes)),
-                React.createElement("p", { className: "practice-combat-card-lane-label" }, "DEF")
-            )
-        ),
-        card.isSpecial
-            ? React.createElement(
-                "div",
-                { className: "practice-combat-card-special-keyword-row" },
+                { className: "practice-combat-card-footer" },
                 React.createElement(
-                    "span",
-                    {
-                        className: `practice-combat-card-special-keyword${keywordClassName}`,
-                    },
-                    fighter?.keyword || ""
-                )
-            )
-            : null,
-        React.createElement(
-            "div",
-            { className: "practice-combat-card-header" },
-            React.createElement(
-                "div",
-                { className: "practice-combat-card-title-block" },
-                React.createElement("p", { className: "practice-combat-card-eyebrow" }, card.isSpecial ? "Special Card" : fighter?.displayName || fighter?.name || "Combat Card"),
-                React.createElement("strong", { className: "practice-combat-card-name" }, card.name)
-            )
-        ),
-        React.createElement(
-            "div",
-            { className: "practice-combat-card-footer" },
-            React.createElement(
-                "div",
-                { className: "practice-combat-card-box-stack", "aria-hidden": "true" },
-                /* Intentional fixed scaffold: normal cards show 3 boxes, special cards show 2. */
-                Array.from({ length: boxCount }, (_, index) => {
-                    const isTopBox = !card.isSpecial && index === 0;
-                    const isBottomBox = index === boxCount - 1;
-                    const isSecondFromBottomBox = index === boxCount - 2;
-                    const boxLabel = isBottomBox
-                        ? "Swap Defense"
-                        : (isSecondFromBottomBox ? "Swap Attack" : (isTopBox ? (fighter?.keyword || "") : ""));
-
-                    return React.createElement(
                     "div",
-                    {
-                        key: `${card.id}-box-${index}`,
-                        className: "practice-combat-card-box",
-                    },
-                    React.createElement("img", {
-                        className: "practice-combat-card-box-icon",
-                        src: CHINESE_KNOT_ICON,
-                        alt: "",
-                        "aria-hidden": "true",
-                    }),
-                    boxLabel
-                        ? React.createElement(
-                            "span",
+                    { className: "practice-combat-card-box-stack", "aria-hidden": "true" },
+                    /* Intentional fixed scaffold: normal cards show 3 boxes, special cards show 2. */
+                    Array.from({ length: boxCount }, (_, index) => {
+                        const isTopBox = !card.isSpecial && index === 0;
+                        const isBottomBox = index === boxCount - 1;
+                        const isSecondFromBottomBox = index === boxCount - 2;
+                        const boxModeId = isBottomBox
+                            ? COMBAT_MODE_SWAP_DEFENSE
+                            : (isSecondFromBottomBox ? COMBAT_MODE_SWAP_ATTACK : (isTopBox ? COMBAT_MODE_KEYWORD : null));
+                        const boxLabel = isBottomBox
+                            ? "Swap Defense"
+                            : (isSecondFromBottomBox ? "Swap Attack" : (isTopBox ? (fighter?.keyword || "") : ""));
+                        const boxClassName = `practice-combat-card-box${boxModeId && selectedMode === boxModeId ? " is-mode-selected" : ""}${boxModeId && isInteractive ? " is-clickable-option" : ""}`;
+
+                        if (boxModeId && isInteractive) {
+                            return React.createElement(
+                                "button",
+                                {
+                                    key: `${card.id}-box-${index}`,
+                                    className: boxClassName,
+                                    type: "button",
+                                    onClick: (event) => {
+                                        event.stopPropagation();
+                                        onChooseMode(boxModeId);
+                                    },
+                                },
+                                React.createElement("img", {
+                                    className: "practice-combat-card-box-icon",
+                                    src: CHINESE_KNOT_ICON,
+                                    alt: "",
+                                    "aria-hidden": "true",
+                                }),
+                                boxLabel
+                                    ? React.createElement(
+                                        "span",
+                                        {
+                                            className: `practice-combat-card-box-label${isTopBox ? keywordClassName : ""}`,
+                                        },
+                                        boxLabel
+                                    )
+                                    : null
+                            );
+                        }
+
+                        return React.createElement(
+                            "div",
                             {
-                                className: `practice-combat-card-box-label${isTopBox ? keywordClassName : ""}`,
+                                key: `${card.id}-box-${index}`,
+                                className: boxClassName,
                             },
+                            React.createElement("img", {
+                                className: "practice-combat-card-box-icon",
+                                src: CHINESE_KNOT_ICON,
+                                alt: "",
+                                "aria-hidden": "true",
+                            }),
                             boxLabel
-                        )
-                        : null
-                );
-                })
+                                ? React.createElement(
+                                    "span",
+                                    {
+                                        className: `practice-combat-card-box-label${isTopBox ? keywordClassName : ""}`,
+                                    },
+                                    boxLabel
+                                )
+                                : null
+                            )
+                        ;
+                    })
+                )
             )
         )
     );
@@ -1760,6 +1989,14 @@ function CombatModal({
     const visibleResolutionSummary = combatState.resolutionSummary
         ? (visibleFighter.id === leftFighter.id ? combatState.resolutionSummary.leftSummary : combatState.resolutionSummary.rightSummary)
         : null;
+    const visibleIsReady = Boolean(visibleFighter.reactionLocked);
+    const bothCombatantsReady = areCombatantsReadyToReveal(combatState);
+    const battlefieldBottomFighter = visibleFighter;
+    const battlefieldTopFighter = hiddenFighter;
+    const battlefieldBottomCard = battlefieldBottomFighter.selectedCardId ? getCombatCardById(battlefieldBottomFighter, battlefieldBottomFighter.selectedCardId) : null;
+    const battlefieldTopCard = battlefieldTopFighter.selectedCardId ? getCombatCardById(battlefieldTopFighter, battlefieldTopFighter.selectedCardId) : null;
+    const battlefieldBottomEffective = battlefieldBottomCard && battlefieldBottomFighter.selectedMode ? getEffectiveCardForCombatant(battlefieldBottomFighter) : null;
+    const battlefieldTopEffective = battlefieldTopCard && battlefieldTopFighter.selectedMode ? getEffectiveCardForCombatant(battlefieldTopFighter) : null;
 
     return React.createElement(
         "div",
@@ -1837,21 +2074,14 @@ function CombatModal({
                                     })
                                 )
                             ),
-                            React.createElement(
-                                "div",
-                                { className: "practice-form-points-row is-character-sheet-form-points", "aria-label": `Form Points ${hiddenFighter.currentFormPoints ?? 0} of ${hiddenFighter.maxFormPoints ?? 0}` },
-                                Array.from({ length: hiddenFighter.maxFormPoints ?? 0 }).map((_, index) =>
-                                    React.createElement("img", {
-                                        key: `opponent-form-${hiddenFighter.id}-${index}`,
-                                        className: `practice-form-knot${index < (hiddenFighter.currentFormPoints ?? 0) ? " is-filled" : ""}`,
-                                        src: CHINESE_KNOT_ICON,
-                                        alt: "",
-                                        "aria-hidden": "true",
-                                    })
-                                )
-                            )
-                        )
+                            React.createElement(AnimatedFormKnotRow, {
+                                fighterId: hiddenFighter.id,
+                                count: hiddenFighter.currentFormPoints ?? 0,
+                                maxCount: hiddenFighter.maxFormPoints ?? 0,
+                                triggerSeq: hiddenFighter.formSpendFxSeq ?? 0,
+                            })
                     )
+                ),
                 ),
                 React.createElement(
                     "div",
@@ -1860,19 +2090,54 @@ function CombatModal({
                         "section",
                         { className: "practice-combat-phase-panel" },
                         combatState.phaseIndex === 0 ? null : null,
-                        combatState.phaseIndex === 1 && visibleEffective
+                        combatState.phaseIndex === 1 && (battlefieldBottomEffective || battlefieldTopEffective)
                             ? React.createElement(
                                 "div",
-                                { className: "practice-combat-reveal-grid is-single-view" },
-                                React.createElement(
-                                    "article",
-                                    { className: "practice-combat-placeholder-card" },
-                                    React.createElement(CombatCardFace, {
-                                        card: visibleEffective.card,
-                                        fighter: visibleFighter,
-                                        effectiveConfig: visibleEffective,
-                                    })
-                                )
+                                { className: "practice-combat-battlefield" },
+                                battlefieldTopEffective
+                                    ? React.createElement(
+                                        "div",
+                                        {
+                                            className: "practice-combat-battlefield-slot is-top is-clash-one-position",
+                                            style: {
+                                                "--battlefield-column": 1,
+                                                "--battlefield-row": 1,
+                                            },
+                                        },
+                                        React.createElement(
+                                            "div",
+                                            { className: "practice-combat-battlefield-card is-opponent" },
+                                            React.createElement(CombatCardFace, {
+                                                card: battlefieldTopEffective.card,
+                                                fighter: battlefieldTopFighter,
+                                                effectiveConfig: battlefieldTopEffective,
+                                                isLocked: true,
+                                            })
+                                        )
+                                    )
+                                    : null,
+                                battlefieldBottomEffective
+                                    ? React.createElement(
+                                        "div",
+                                        {
+                                            className: "practice-combat-battlefield-slot is-bottom is-clash-one-position",
+                                            style: {
+                                                "--battlefield-column": 1,
+                                                "--battlefield-row": 2,
+                                            },
+                                        },
+                                        React.createElement(
+                                            "div",
+                                            { className: "practice-combat-battlefield-card is-player" },
+                                            React.createElement(CombatCardFace, {
+                                                card: battlefieldBottomEffective.card,
+                                                fighter: battlefieldBottomFighter,
+                                                effectiveConfig: battlefieldBottomEffective,
+                                                isLocked: true,
+                                            })
+                                        )
+                                    )
+                                    : null
                             )
                             : null,
                         combatState.phaseIndex === 2 && visibleEffective
@@ -1915,41 +2180,78 @@ function CombatModal({
                         ? React.createElement(
                             "div",
                             { className: `practice-combat-hand-dock${visibleFighter.selectedCardId ? " has-selection" : ""}` },
-                            visibleFighter.selectedCardId
+                            visibleFighter.selectedCardId && visibleFighter.selectedMode
                                 ? React.createElement(
                                     "button",
                                     {
                                         className: "practice-combat-clash-button",
                                         type: "button",
-                                        onClick: onAdvancePhase,
+                                        onClick: () => onAdvancePhase(visibleFighter.id),
+                                        disabled: visibleIsReady || !visibleFighter.selectedMode,
                                     },
-                                    "Clash!"
+                                    visibleIsReady ? "Locked In" : "Clash!"
                                 )
                                 : null,
                             React.createElement(
                                 "div",
                                 { className: `practice-combat-hand-grid${visibleFighter.selectedCardId ? " has-selection" : ""}` },
-                                visibleFighter.hand.map((card, index) =>
-                                    React.createElement(
+                                visibleFighter.hand.map((card, index) => {
+                                    const isSelectedCard = visibleFighter.selectedCardId === card.id;
+                                    const cardFace = React.createElement(CombatCardFace, {
+                                        card,
+                                        fighter: visibleFighter,
+                                        effectiveConfig: isSelectedCard ? visibleSelectedConfig : null,
+                                        isSelected: isSelectedCard,
+                                        isButton: !isSelectedCard,
+                                        selectedMode: isSelectedCard ? visibleFighter.selectedMode : null,
+                                        onChooseMode: isSelectedCard && !visibleFighter.reactionLocked ? ((modeId) => onChooseMode(visibleFighter.id, modeId)) : null,
+                                        spendBurstSeq: isSelectedCard ? (visibleFighter.formSpendFxSeq ?? 0) : 0,
+                                        isLocked: visibleFighter.reactionLocked,
+                                    });
+
+                                    if (isSelectedCard) {
+                                        return React.createElement(
+                                            "div",
+                                            {
+                                                key: card.id,
+                                                className: "practice-combat-card-button is-selected",
+                                                style: {
+                                                    "--practice-card-index": index,
+                                                    "--practice-card-count": visibleFighter.hand.length,
+                                                },
+                                                onClick: () => {
+                                                    if (!visibleFighter.reactionLocked) {
+                                                        onChooseCard(visibleFighter.id, card.id);
+                                                    }
+                                                },
+                                            },
+                                            React.createElement(CombatCardSpendBurst, {
+                                                triggerSeq: visibleFighter.formSpendFxSeq ?? 0,
+                                            }),
+                                            cardFace
+                                        );
+                                    }
+
+                                    return React.createElement(
                                         "button",
                                         {
                                             key: card.id,
-                                            className: `practice-combat-card-button${visibleFighter.selectedCardId === card.id ? " is-selected" : ""}`,
+                                            className: "practice-combat-card-button",
                                             type: "button",
                                             style: {
                                                 "--practice-card-index": index,
                                                 "--practice-card-count": visibleFighter.hand.length,
                                             },
-                                            onClick: () => onChooseCard(visibleFighter.id, card.id),
+                                            onClick: () => {
+                                                if (!visibleFighter.reactionLocked) {
+                                                    onChooseCard(visibleFighter.id, card.id);
+                                                }
+                                            },
+                                            disabled: bothCombatantsReady || visibleFighter.reactionLocked,
                                         },
-                                        React.createElement(CombatCardFace, {
-                                            card,
-                                            fighter: visibleFighter,
-                                            isSelected: visibleFighter.selectedCardId === card.id,
-                                            isButton: true,
-                                        })
-                                    )
-                                )
+                                        cardFace
+                                    );
+                                })
                             )
                         )
                         : null
@@ -3137,7 +3439,7 @@ function PracticeGame() {
         });
     }
 
-    function advanceCombatPhase() {
+    function advanceCombatPhase(fighterId = null) {
         setCombatState((existing) => {
             if (!existing) {
                 return existing;
@@ -3147,29 +3449,32 @@ function PracticeGame() {
             const rightCombatant = existing.combatants[existing.defenderId];
 
             if (existing.phaseIndex === 0) {
-                if (!leftCombatant?.selectedCardId || !rightCombatant?.selectedCardId || !leftCombatant.selectedMode || !rightCombatant.selectedMode) {
+                if (!fighterId) {
                     return existing;
                 }
 
-                const leftSelectedCard = getCombatCardById(leftCombatant, leftCombatant.selectedCardId);
-                const rightSelectedCard = getCombatCardById(rightCombatant, rightCombatant.selectedCardId);
-                const leftCost = leftSelectedCard ? getModeCost(leftSelectedCard, leftCombatant.selectedMode) : 0;
-                const rightCost = rightSelectedCard ? getModeCost(rightSelectedCard, rightCombatant.selectedMode) : 0;
+                const actingCombatant = existing.combatants[fighterId];
+
+                if (!actingCombatant?.selectedCardId || !actingCombatant.selectedMode || actingCombatant.reactionLocked) {
+                    return existing;
+                }
+
+                const combatants = {
+                    ...existing.combatants,
+                    [fighterId]: {
+                        ...actingCombatant,
+                        reactionLocked: true,
+                    },
+                };
+                const bothReady = areCombatantsReadyToReveal({
+                    ...existing,
+                    combatants,
+                });
 
                 return {
                     ...existing,
-                    phaseIndex: 1,
-                    combatants: {
-                        ...existing.combatants,
-                        [existing.attackerId]: {
-                            ...leftCombatant,
-                            currentFormPoints: Math.max(0, leftCombatant.currentFormPoints - leftCost),
-                        },
-                        [existing.defenderId]: {
-                            ...rightCombatant,
-                            currentFormPoints: Math.max(0, rightCombatant.currentFormPoints - rightCost),
-                        },
-                    },
+                    phaseIndex: bothReady ? 1 : 0,
+                    combatants,
                 };
             }
 
@@ -3273,13 +3578,21 @@ function PracticeGame() {
                 return existing;
             }
 
+            if (combatant.reactionLocked) {
+                return existing;
+            }
+
             if (combatant.selectedCardId) {
+                const previouslySelectedCard = getCombatCardById(combatant, combatant.selectedCardId);
+                const refundAmount = previouslySelectedCard ? getModeCost(previouslySelectedCard, combatant.selectedMode) : 0;
+
                 return {
                     ...existing,
                     combatants: {
                         ...existing.combatants,
                         [fighterId]: {
                             ...combatant,
+                            currentFormPoints: Math.min(combatant.maxFormPoints, combatant.currentFormPoints + refundAmount),
                             selectedCardId: null,
                             effectiveCardId: null,
                             selectedMode: null,
@@ -3289,7 +3602,7 @@ function PracticeGame() {
                 };
             }
 
-            const defaultModeId = selectedCard.isSpecial ? COMBAT_MODE_NORMAL : COMBAT_MODE_KEYWORD;
+            const defaultModeId = selectedCard.isSpecial ? COMBAT_MODE_NORMAL : null;
 
             return {
                 ...existing,
@@ -3320,7 +3633,15 @@ function PracticeGame() {
                 return existing;
             }
 
-            if (getModeCost(selectedCard, modeId) > combatant.currentFormPoints) {
+            if (combatant.reactionLocked) {
+                return existing;
+            }
+
+            const previousCost = getModeCost(selectedCard, combatant.selectedMode);
+            const nextCost = getModeCost(selectedCard, modeId);
+            const costDelta = nextCost - previousCost;
+
+            if (costDelta > combatant.currentFormPoints) {
                 return existing;
             }
 
@@ -3332,6 +3653,8 @@ function PracticeGame() {
                         ...combatant,
                         selectedMode: modeId,
                         effectiveCardId: combatant.selectedCardId,
+                        currentFormPoints: Math.max(0, Math.min(combatant.maxFormPoints, combatant.currentFormPoints - costDelta)),
+                        formSpendFxSeq: costDelta > 0 ? (combatant.formSpendFxSeq ?? 0) + 1 : (combatant.formSpendFxSeq ?? 0),
                         stumbleTriggered: false,
                     },
                 },
