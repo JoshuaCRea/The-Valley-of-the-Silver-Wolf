@@ -2,22 +2,63 @@ import {
     CCW_DIR_VALUE,
     CW_DIR_VALUE,
     TRACK_DETAILS,
-    createPlayers,
     getFighterStatusFace,
     getSchoolSigil,
     getTownCopy,
     normalizeIndex,
 } from "./gameData.js";
+import {
+    createInitialGameState,
+    clonePlayersSnapshot,
+    cloneSchoolsSnapshot,
+} from "./domain/state.js";
+import {
+    SCHOOL_STATUS_WHOLE,
+    SCHOOL_STATUS_SIEGED,
+    SCHOOL_STATUS_DESTROYED,
+} from "./domain/constants.js";
+import {
+    applyCombatEncounterResult,
+    areCombatantsReadyToReveal,
+    canModifySelectedCard,
+    COMBAT_LANES,
+    COMBAT_MODE_KEYWORD,
+    COMBAT_MODE_NORMAL,
+    COMBAT_MODE_SWAP_ATTACK,
+    COMBAT_MODE_SWAP_DEFENSE,
+    FIGHTER_STYLE_COPY,
+    formatCombatLane,
+    getCombatCardById,
+    getCombatEncounterResult,
+    getEffectiveCardForCombatant,
+    selectCombatCard,
+    selectCombatMode,
+    startCombatEncounter,
+    advanceCombatState,
+    triggerCombatStumble as advanceCombatStumble,
+} from "./domain/combat.js";
+import {
+    canChallengeSilverWolf,
+    consumeNextTurnActionBonus,
+    getAlivePlayers,
+    getNextLivingIndex,
+    getRivalsAtPosition,
+    getSchoolById,
+    getSchoolByName,
+    grantSingleUseActionForNextTurn,
+    lowerReputation,
+} from "./domain/rules.js";
+import { advanceTurnState } from "./application/turnService.js";
+import {
+    resolveHealAction,
+    resolveSaveSchoolAction,
+    resolveSilverWolfChallenge,
+    resolveTravelAction,
+} from "./application/playerActionService.js";
+import { createBrowserRandomizer } from "./adapters/random/browserRandomizer.js";
 
 const React = window.React;
 const ReactDOM = window.ReactDOM;
-const MAX_STAT = 5;
-const SCHOOL_STATUS_WHOLE = "whole";
-const SCHOOL_STATUS_SIEGED = "sieged";
-const SCHOOL_STATUS_DESTROYED = "destroyed";
-const WHITE_DIE_WOLF = 1;
-const SILVER_WOLF_BASE_STRENGTH = 20;
-const TOTAL_TO_CHALLENGE = 15;
 const TRAVEL_ARROWS_ICON = new URL("./images/arrows-couple-svgrepo-com.svg", import.meta.url).href;
 const DEFEND_ICON = new URL("./images/defend-icon.svg", import.meta.url).href;
 const FIRE_ICON = new URL("./images/fire-svgrepo-com.svg", import.meta.url).href;
@@ -149,40 +190,6 @@ const RULE_SECTIONS = [
         ],
     },
 ];
-const PLAYER_STARTING_STATS = {
-    Pouch: { power: 0, stamina: 1, agility: 0, chi: 0, wit: 2 },
-    "Leap-Creek": { power: 0, stamina: 0, agility: 1, chi: 2, wit: 0 },
-    Fangmarsh: { power: 2, stamina: 0, agility: 0, chi: 0, wit: 1 },
-    Blackstone: { power: 1, stamina: 2, agility: 0, chi: 0, wit: 0 },
-    Underclaw: { power: 0, stamina: 0, agility: 2, chi: 1, wit: 0 },
-};
-
-function createInitialPlayers() {
-    return createPlayers().map((player, index) => ({
-        ...player,
-        ...PLAYER_STARTING_STATS[player.name],
-        reputation: 3,
-        techniques: { black: 0, brown: 0, gold: 0 },
-        hitPoints: 3,
-        formPoints: 2,
-        bonusActionsNextTurn: 0,
-        injured: false,
-        arrivalOrder: index,
-        alive: true,
-    }));
-}
-
-function createSchools() {
-    return TRACK_DETAILS.filter((location) => location.type === "town").map((location) => ({
-        id: location.id,
-        name: location.name,
-        status: SCHOOL_STATUS_WHOLE,
-        saveProgress: 0,
-        isCompletingSave: false,
-        defenders: [],
-    }));
-}
-
 function getPlayerNumber(player) {
     if (!player?.id) {
         return null;
@@ -213,232 +220,13 @@ function getTrackStyle(index, color) {
     };
 }
 
-function clampStat(value) {
-    return Math.max(0, Math.min(MAX_STAT, value));
-}
-
-function randomDie() {
-    return Math.floor(Math.random() * 6) + 1;
-}
-
-function rollWhiteDie() {
-    return randomDie();
-}
-
-function getTotalStats(player) {
-    return player.power + player.stamina + player.agility + player.chi + player.wit;
-}
-
 function isTown(locationId) {
     return locationId.startsWith("#") && !locationId.startsWith("#road");
-}
-
-function getSchoolById(schools, schoolId) {
-    return schools.find((school) => school.id === schoolId) || null;
-}
-
-function getSchoolByName(schools, schoolName) {
-    return schools.find((school) => school.name === schoolName) || null;
 }
 
 function getSchoolEventLabel(school) {
     const townCopy = getTownCopy(school.id);
     return `the ${townCopy.school} in ${school.name}`;
-}
-
-function formatNameList(names) {
-    if (names.length <= 1) {
-        return names[0] || "";
-    }
-
-    if (names.length === 2) {
-        return `${names[0]} and ${names[1]}`;
-    }
-
-    return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
-}
-
-function getAlivePlayers(players) {
-    return players.filter((player) => player.alive);
-}
-
-function getActionsForPlayer(player) {
-    if (!player) {
-        return 0;
-    }
-
-    const baseActions = player.injured ? 1 : 2;
-    return baseActions + (player.bonusActionsNextTurn || 0);
-}
-
-function consumeNextTurnActionBonus(players, playerIndex) {
-    const player = players[playerIndex];
-    const consumedBonusActions = player?.bonusActionsNextTurn || 0;
-
-    if (!player || !player.bonusActionsNextTurn) {
-        return {
-            players,
-            actions: getActionsForPlayer(player),
-            consumedBonusActions,
-        };
-    }
-
-    const updatedPlayers = players.map((entry, index) => (
-        index === playerIndex
-            ? {
-                ...entry,
-                bonusActionsNextTurn: 0,
-            }
-            : entry
-    ));
-
-    return {
-        players: updatedPlayers,
-        actions: getActionsForPlayer(player),
-        consumedBonusActions,
-    };
-}
-
-function grantSingleUseActionForNextTurn(players, playerId) {
-    return players.map((player) => (
-        player.id === playerId
-            ? {
-                ...player,
-                bonusActionsNextTurn: (player.bonusActionsNextTurn || 0) + 1,
-            }
-            : player
-    ));
-}
-
-function getNextLivingIndex(players, currentIndex) {
-    for (let offset = 1; offset <= players.length; offset += 1) {
-        const candidateIndex = (currentIndex + offset) % players.length;
-        if (players[candidateIndex].alive) {
-            return candidateIndex;
-        }
-    }
-
-    return currentIndex;
-}
-
-function changeStats(player, updates) {
-    const tookDamage = Object.values(updates).some((value) => value < 0);
-
-    Object.entries(updates).forEach(([key, value]) => {
-        player[key] = clampStat(player[key] + value);
-    });
-
-    if (tookDamage) {
-        player.injured = true;
-    }
-}
-
-function lowerReputation(player, amount = 1) {
-    player.reputation = clampStat(player.reputation - amount);
-}
-
-function raiseReputation(player, amount = 1) {
-    player.reputation = clampStat(player.reputation + amount);
-}
-
-function getSilverWolfStrength(schools) {
-    const destroyedSchools = schools.filter((school) => school.status === SCHOOL_STATUS_DESTROYED).length;
-    return SILVER_WOLF_BASE_STRENGTH + (destroyedSchools * 2);
-}
-
-function canChallengeSilverWolf(player) {
-    return player.alive && getTotalStats(player) >= TOTAL_TO_CHALLENGE;
-}
-
-function buildCombatScore(player) {
-    return player.power + player.stamina + player.agility + player.chi + player.wit + randomDie();
-}
-
-function resolveRivalFight(players, activeIndex, logEntries) {
-    const activePlayer = players[activeIndex];
-    const rivals = players.filter((player, index) => (
-        index !== activeIndex && player.alive && player.position === activePlayer.position
-    ));
-
-    if (rivals.length === 0) {
-        return;
-    }
-
-    const rival = rivals[0];
-    const activeScore = buildCombatScore(activePlayer);
-    const rivalScore = buildCombatScore(rival);
-
-    if (activeScore >= rivalScore) {
-        changeStats(activePlayer, { wit: 1 });
-        changeStats(rival, { stamina: -1, chi: -1 });
-        logEntries.push(
-            `${getPlayerDisplayName(activePlayer)} beats ${getPlayerDisplayName(rival)} in a fight and gains 1 Wit. ${getPlayerDisplayName(rival)} loses 1 Stamina and 1 Chi.`
-        );
-        return;
-    }
-
-    changeStats(rival, { wit: 1 });
-    changeStats(activePlayer, { stamina: -1, chi: -1 });
-    logEntries.push(
-        `${getPlayerDisplayName(rival)} beats ${getPlayerDisplayName(activePlayer)} in a fight. ${getPlayerDisplayName(activePlayer)} loses 1 Stamina and 1 Chi.`
-    );
-}
-
-function getRivalsAtPosition(players, activeIndex) {
-    const activePlayer = players[activeIndex];
-
-    if (!activePlayer?.alive) {
-        return [];
-    }
-
-    return players.filter((player, index) => (
-        index !== activeIndex && player.alive && player.position === activePlayer.position
-    ));
-}
-
-function advanceSilverWolf(schools, logEntries) {
-    const standingSchools = schools.filter((school) => school.status !== SCHOOL_STATUS_DESTROYED);
-    const siegedSchool = standingSchools.find((school) => school.status === SCHOOL_STATUS_SIEGED && !school.isCompletingSave) || null;
-    const wholeSchools = standingSchools.filter((school) => school.status === SCHOOL_STATUS_WHOLE && !school.isCompletingSave);
-
-    if (standingSchools.length === 0) {
-        return false;
-    }
-
-    const whiteDieResult = rollWhiteDie();
-
-    if (siegedSchool) {
-        const selectedSchool = standingSchools[Math.floor(Math.random() * standingSchools.length)];
-
-        if (selectedSchool.id !== siegedSchool.id) {
-            return schools.some((school) => school.status !== SCHOOL_STATUS_DESTROYED);
-        }
-
-        if (whiteDieResult === WHITE_DIE_WOLF) {
-            siegedSchool.status = SCHOOL_STATUS_DESTROYED;
-            siegedSchool.saveProgress = 0;
-            siegedSchool.isCompletingSave = false;
-            siegedSchool.defenders = [];
-            logEntries.push(`The Silver Wolf has destroyed ${getSchoolEventLabel(siegedSchool)}.`);
-        }
-        return schools.some((school) => school.status !== SCHOOL_STATUS_DESTROYED);
-    }
-
-    if (wholeSchools.length === 0) {
-        return false;
-    }
-
-    const target = wholeSchools[Math.floor(Math.random() * wholeSchools.length)];
-
-    if (whiteDieResult === WHITE_DIE_WOLF) {
-        target.status = SCHOOL_STATUS_SIEGED;
-        target.saveProgress = 0;
-        target.isCompletingSave = false;
-        target.defenders = [];
-        logEntries.push(`The Silver Wolf has laid siege to ${getSchoolEventLabel(target)}.`);
-    }
-
-    return schools.some((school) => school.status !== SCHOOL_STATUS_DESTROYED);
 }
 
 function StatPill({ label, value }) {
@@ -451,29 +239,6 @@ function StatPill({ label, value }) {
         React.createElement("strong", null, value)
     );
 }
-
-const FIGHTER_STYLE_COPY = {
-    "Leap-Creek": {
-        style: "Boundless Hand",
-        keyword: "Reversal",
-    },
-    Fangmarsh: {
-        style: "Praying Mantis",
-        keyword: "Flurry",
-    },
-    Blackstone: {
-        style: "Immense Fist",
-        keyword: "Endure",
-    },
-    Underclaw: {
-        style: "Long Fist",
-        keyword: "Overwhelm",
-    },
-    Pouch: {
-        style: "Drunken Fist",
-        keyword: "Stumble",
-    },
-};
 
 function FighterProfileCard({ player }) {
     const townCopy = getTownCopy(`#${player.name}`);
@@ -1390,332 +1155,9 @@ function CombatCardSpendBurst({ triggerSeq = 0 }) {
     );
 }
 
-const COMBAT_LANES = ["high", "middle", "low"];
-const COMBAT_LANE_LABELS = {
-    high: "High",
-    middle: "Middle",
-    low: "Low",
-};
-const COMBAT_MODE_NORMAL = "normal";
-const COMBAT_MODE_KEYWORD = "keyword";
-const COMBAT_MODE_SWAP_ATTACK = "swap-attack";
-const COMBAT_MODE_SWAP_DEFENSE = "swap-defense";
-const BASE_COMBAT_DECK_CARDS = [
-    { id: "shared-hh", attack: "high", defense: "high", swapLane: "middle", isSpecial: false, title: "High Wall" },
-    { id: "shared-hm", attack: "high", defense: "middle", swapLane: "low", isSpecial: false, title: "Rising Split" },
-    { id: "shared-hl", attack: "high", defense: "low", swapLane: "middle", isSpecial: false, title: "Sky Hook" },
-    { id: "shared-mh", attack: "middle", defense: "high", swapLane: "low", isSpecial: false, title: "Center Break" },
-    { id: "shared-mm", attack: "middle", defense: "middle", swapLane: "high", isSpecial: false, title: "Mirror Gate" },
-    { id: "shared-ml", attack: "middle", defense: "low", swapLane: "high", isSpecial: false, title: "Cross Step" },
-    { id: "shared-lh", attack: "low", defense: "high", swapLane: "middle", isSpecial: false, title: "Shin Sweep" },
-    { id: "shared-lm", attack: "low", defense: "middle", swapLane: "high", isSpecial: false, title: "River Cut" },
-    { id: "shared-ll", attack: "low", defense: "low", swapLane: "middle", isSpecial: false, title: "Rooted Hook" },
-];
-const COMBAT_DECK_LIBRARY = {
-    "Leap-Creek": BASE_COMBAT_DECK_CARDS.concat({
-        id: "special-mm-leap-creek",
-        attack: "middle",
-        defense: "middle",
-        swapLane: "low",
-        isSpecial: true,
-        title: "Hidden Whirlpool",
-    }),
-    Fangmarsh: BASE_COMBAT_DECK_CARDS.concat({
-        id: "special-mm-fangmarsh",
-        attack: "middle",
-        defense: "middle",
-        swapLane: "low",
-        isSpecial: true,
-        title: "Billowing Rush",
-    }),
-    Blackstone: BASE_COMBAT_DECK_CARDS.concat({
-        id: "special-mm-blackstone",
-        attack: "middle",
-        defense: "middle",
-        swapLane: "low",
-        isSpecial: true,
-        title: "Tempered Veil",
-    }),
-    Underclaw: BASE_COMBAT_DECK_CARDS.concat({
-        id: "special-mm-underclaw",
-        attack: "middle",
-        defense: "middle",
-        swapLane: "low",
-        isSpecial: true,
-        title: "Smothering Soil",
-    }),
-    Pouch: BASE_COMBAT_DECK_CARDS.concat({
-        id: "special-mm-pouch",
-        attack: "middle",
-        defense: "middle",
-        swapLane: "low",
-        isSpecial: true,
-        title: "Splintered Step",
-    }),
-};
-
-function formatCombatLane(lane) {
-    return COMBAT_LANE_LABELS[lane] || lane;
-}
-
 function describeLaneSet(lanes) {
     return lanes.map((lane) => formatCombatLane(lane)).join(" / ");
 }
-
-function shuffleArray(items) {
-    const result = items.slice();
-
-    for (let index = result.length - 1; index > 0; index -= 1) {
-        const swapIndex = Math.floor(Math.random() * (index + 1));
-        [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
-    }
-
-    return result;
-}
-
-function createCombatDeckForPlayer(player) {
-    const keyword = FIGHTER_STYLE_COPY[player.name]?.keyword || "Keyword";
-    const deck = COMBAT_DECK_LIBRARY[player.name] || COMBAT_DECK_LIBRARY.Pouch;
-
-    return deck.map((card, index) => ({
-        ...card,
-        deckIndex: index,
-        keyword,
-        name: card.title,
-        laneLabel: `${formatCombatLane(card.attack)} / ${formatCombatLane(card.defense)}`,
-    }));
-}
-
-function drawCombatCards(drawPile, amount) {
-    return {
-        drawnCards: drawPile.slice(0, amount),
-        remainingDrawPile: drawPile.slice(amount),
-    };
-}
-
-function createCombatantState(player) {
-    const shuffledDeck = shuffleArray(createCombatDeckForPlayer(player));
-    const openingDraw = drawCombatCards(shuffledDeck, 5);
-
-    return {
-        id: player.id,
-        name: getPlayerDisplayName(player),
-        displayName: getPlayerDisplayName(player),
-        hometownName: player.name,
-        keyword: FIGHTER_STYLE_COPY[player.name]?.keyword || "Keyword",
-        maxHitPoints: player.hitPoints ?? 3,
-        currentHitPoints: player.hitPoints ?? 3,
-        maxFormPoints: player.formPoints ?? 2,
-        currentFormPoints: player.formPoints ?? 2,
-        formSpendFxSeq: 0,
-        drawPile: openingDraw.remainingDrawPile,
-        hand: openingDraw.drawnCards,
-        discard: [],
-        selectedCardId: null,
-        selectedMode: null,
-        effectiveCardId: null,
-        stumbleTriggered: false,
-        reactionLocked: false,
-    };
-}
-
-function areCombatantsReadyToReveal(combatState) {
-    if (!combatState) {
-        return false;
-    }
-
-    const leftCombatant = combatState.combatants[combatState.attackerId];
-    const rightCombatant = combatState.combatants[combatState.defenderId];
-
-    return Boolean(
-        leftCombatant?.selectedCardId
-        && rightCombatant?.selectedCardId
-        && leftCombatant?.selectedMode
-        && rightCombatant?.selectedMode
-        && leftCombatant?.reactionLocked
-        && rightCombatant?.reactionLocked
-    );
-}
-
-function startCombatEncounter(players, attackerId, defenderId) {
-    const attacker = players.find((player) => player.id === attackerId);
-    const defender = players.find((player) => player.id === defenderId);
-
-    if (!attacker || !defender) {
-        return null;
-    }
-
-    return {
-        attackerId,
-        defenderId,
-        clashNumber: 1,
-        phaseIndex: 0,
-        clashLog: [],
-        combatants: {
-            [attackerId]: createCombatantState(attacker),
-            [defenderId]: createCombatantState(defender),
-        },
-    };
-}
-
-function getCombatCardById(combatant, cardId) {
-    return combatant.hand.find((card) => card.id === cardId)
-        || combatant.discard.find((card) => card.id === cardId)
-        || combatant.drawPile.find((card) => card.id === cardId)
-        || null;
-}
-
-function getEffectiveCardForCombatant(combatant) {
-    const card = getCombatCardById(combatant, combatant.effectiveCardId || combatant.selectedCardId);
-
-    if (!card) {
-        return null;
-    }
-
-    const keywordActive = card.isSpecial || combatant.selectedMode === COMBAT_MODE_KEYWORD;
-    const attackLanes = [card.attack];
-    const defenseLanes = [card.defense];
-
-    if (keywordActive && combatant.keyword === "Flurry") {
-        attackLanes.push(card.swapLane);
-    }
-
-    if (keywordActive && combatant.keyword === "Endure") {
-        defenseLanes.push(card.swapLane);
-    }
-
-    if (combatant.selectedMode === COMBAT_MODE_SWAP_ATTACK) {
-        attackLanes.splice(0, attackLanes.length, card.swapLane);
-    }
-
-    if (combatant.selectedMode === COMBAT_MODE_SWAP_DEFENSE) {
-        defenseLanes.splice(0, defenseLanes.length, card.swapLane);
-    }
-
-    return {
-        card,
-        attackLanes,
-        defenseLanes,
-        keywordActive,
-        keyword: combatant.keyword,
-        ignoresIncomingAttack: keywordActive && combatant.keyword === "Overwhelm",
-        grantsReversal: keywordActive && combatant.keyword === "Reversal",
-        allowsReactionStumble: keywordActive && combatant.keyword === "Stumble",
-    };
-}
-
-function getModeCost(card, mode) {
-    if (!mode) {
-        return 0;
-    }
-
-    if (card.isSpecial) {
-        if (mode === COMBAT_MODE_SWAP_ATTACK || mode === COMBAT_MODE_SWAP_DEFENSE) {
-            return 1;
-        }
-        return 0;
-    }
-
-    if (mode === COMBAT_MODE_NORMAL) {
-        return 0;
-    }
-
-    return 1;
-}
-
-function getAvailableModes(card) {
-    if (card.isSpecial) {
-        return [
-            { id: COMBAT_MODE_NORMAL, label: "Keyword Active", copy: "Keyword is always on for this card.", cost: 0 },
-            { id: COMBAT_MODE_SWAP_ATTACK, label: "Swap Attack", copy: `Replace attack with ${formatCombatLane(card.swapLane)}.`, cost: 1 },
-            { id: COMBAT_MODE_SWAP_DEFENSE, label: "Swap Defense", copy: `Replace defense with ${formatCombatLane(card.swapLane)}.`, cost: 1 },
-        ];
-    }
-
-    return [
-        { id: COMBAT_MODE_KEYWORD, label: "School Special", copy: "Use this fighter's keyword.", cost: 1 },
-        { id: COMBAT_MODE_SWAP_ATTACK, label: "Swap Attack", copy: `Replace attack with ${formatCombatLane(card.swapLane)}.`, cost: 1 },
-        { id: COMBAT_MODE_SWAP_DEFENSE, label: "Swap Defense", copy: `Replace defense with ${formatCombatLane(card.swapLane)}.`, cost: 1 },
-    ];
-}
-
-function canModifySelectedCard(card, selectedMode) {
-    if (!card) {
-        return false;
-    }
-
-    if (card.isSpecial) {
-        return selectedMode === COMBAT_MODE_NORMAL;
-    }
-
-    return selectedMode === null;
-}
-
-function getPrintedModes(card, fighter) {
-    if (card.isSpecial) {
-        return [
-            { id: COMBAT_MODE_SWAP_ATTACK, text: `Swap Attack - ${formatCombatLane(card.swapLane)}` },
-            { id: COMBAT_MODE_SWAP_DEFENSE, text: `Swap Defense - ${formatCombatLane(card.swapLane)}` },
-        ];
-    }
-
-    return [
-        { id: COMBAT_MODE_KEYWORD, text: fighter?.keyword || "School Special", keyword: fighter?.keyword || "" },
-        { id: COMBAT_MODE_SWAP_ATTACK, text: `Swap Attack - ${formatCombatLane(card.swapLane)}` },
-        { id: COMBAT_MODE_SWAP_DEFENSE, text: `Swap Defense - ${formatCombatLane(card.swapLane)}` },
-    ];
-}
-
-function resolveAttackAgainstDefender(attackerConfig, defenderConfig) {
-    if (defenderConfig.ignoresIncomingAttack) {
-        return { hits: 0, blocks: 0, ignored: attackerConfig.attackLanes.length };
-    }
-
-    return attackerConfig.attackLanes.reduce((result, lane) => {
-        if (defenderConfig.defenseLanes.includes(lane)) {
-            result.blocks += 1;
-        } else {
-            result.hits += 1;
-        }
-        return result;
-    }, { hits: 0, blocks: 0, ignored: 0 });
-}
-
-function settleCombatCardUse(combatant) {
-    const consumedCardId = combatant.effectiveCardId || combatant.selectedCardId;
-    const consumedCard = getCombatCardById(combatant, consumedCardId);
-    const currentHand = combatant.hand.filter((card) => card.id !== consumedCardId);
-    let nextDrawPile = combatant.drawPile.slice();
-    let nextDiscard = combatant.discard.concat(consumedCard ? [consumedCard] : []);
-    let replenishedHand = currentHand.slice();
-
-    if (replenishedHand.length === 0) {
-        if (nextDrawPile.length === 0 && nextDiscard.length > 0) {
-            const reshuffledDeck = shuffleArray(nextDiscard);
-            const redraw = drawCombatCards(reshuffledDeck, Math.min(5, reshuffledDeck.length));
-            replenishedHand = redraw.drawnCards;
-            nextDrawPile = redraw.remainingDrawPile;
-            nextDiscard = [];
-        } else if (nextDrawPile.length > 0) {
-            const redraw = drawCombatCards(nextDrawPile, Math.min(5, nextDrawPile.length));
-            replenishedHand = redraw.drawnCards;
-            nextDrawPile = redraw.remainingDrawPile;
-        }
-    }
-
-    return {
-        ...combatant,
-        hand: replenishedHand,
-        drawPile: nextDrawPile,
-        discard: nextDiscard,
-        selectedCardId: null,
-        selectedMode: null,
-        effectiveCardId: null,
-        stumbleTriggered: false,
-        reactionLocked: false,
-    };
-}
-
 function CombatCardFace({
     card,
     fighter,
@@ -1983,7 +1425,6 @@ function CombatModal({
     const hiddenFighter = visibleFighter.id === leftFighter.id ? rightFighter : leftFighter;
     const visibleSelectedCard = visibleFighter.selectedCardId ? getCombatCardById(visibleFighter, visibleFighter.selectedCardId) : null;
     const visibleSelectedConfig = visibleSelectedCard ? getEffectiveCardForCombatant(visibleFighter) : null;
-    const visibleAvailableModes = visibleSelectedCard ? getAvailableModes(visibleSelectedCard) : [];
     const visibleEffective = visibleFighter.id === leftFighter.id ? leftEffective : rightEffective;
     const visibleCanStumble = Boolean(visibleEffective?.allowsReactionStumble && !visibleFighter.stumbleTriggered);
     const visibleResolutionSummary = combatState.resolutionSummary
@@ -2375,17 +1816,6 @@ const PLAYER_ACTIONS = [
 
 const TRAVEL_ACTIONS = [PLAYER_ACTIONS[0], PLAYER_ACTIONS[1]];
 const OTHER_PLAYER_ACTIONS = PLAYER_ACTIONS.slice(2);
-
-function clonePlayersSnapshot(players) {
-    return players.map((player) => ({ ...player }));
-}
-
-function cloneSchoolsSnapshot(schools) {
-    return schools.map((school) => ({
-        ...school,
-        defenders: Array.isArray(school.defenders) ? school.defenders.slice() : school.defenders,
-    }));
-}
 
 function getEventPlayerName(player) {
     return getPlayerDisplayName(player);
@@ -2839,12 +2269,14 @@ function createActionIndicatorGhost() {
 }
 
 function PracticeGame() {
-    const [players, setPlayers] = React.useState(createInitialPlayers);
-    const [schools, setSchools] = React.useState(createSchools);
-    const [currentPlayerIndex, setCurrentPlayerIndex] = React.useState(0);
-    const [actionsRemaining, setActionsRemaining] = React.useState(() => getActionsForPlayer(createInitialPlayers()[0]));
+    const randomizer = React.useMemo(() => createBrowserRandomizer(), []);
+    const initialGameState = React.useMemo(() => createInitialGameState(), []);
+    const [players, setPlayers] = React.useState(initialGameState.players);
+    const [schools, setSchools] = React.useState(initialGameState.schools);
+    const [currentPlayerIndex, setCurrentPlayerIndex] = React.useState(initialGameState.currentPlayerIndex);
+    const [actionsRemaining, setActionsRemaining] = React.useState(initialGameState.actionsRemaining);
     const [currentTurnBonusActionsRemaining, setCurrentTurnBonusActionsRemaining] = React.useState(0);
-    const [nextArrivalOrder, setNextArrivalOrder] = React.useState(createPlayers().length);
+    const [nextArrivalOrder, setNextArrivalOrder] = React.useState(initialGameState.nextArrivalOrder);
     const [pendingRoll, setPendingRoll] = React.useState(null);
     const [battleLog, setBattleLog] = React.useState([]);
     const [winnerId, setWinnerId] = React.useState(null);
@@ -3241,66 +2673,29 @@ function PracticeGame() {
 
     function resolveTurnEnd(updatedPlayers, updatedSchools) {
         setUndoState(null);
-        setCurrentTurnBonusActionsRemaining(0);
-        setPlayers(updatedPlayers);
-        setSchools(updatedSchools);
+        const resolvedTurn = advanceTurnState({
+            currentPlayerIndex,
+            players: updatedPlayers,
+            schools: updatedSchools,
+            randomizer: {
+                chooseIndex: randomizer.chooseIndex,
+                rollWhiteDie: randomizer.rollDie,
+            },
+            getEventPlayerName,
+            getSchoolEventLabel,
+        });
 
-        const aliveAfterTurn = getAlivePlayers(updatedPlayers);
+        setPlayers(resolvedTurn.players);
+        setSchools(resolvedTurn.schools);
+        setCurrentPlayerIndex(resolvedTurn.nextPlayerIndex);
+        setActionsRemaining(resolvedTurn.actionsRemaining);
+        setCurrentTurnBonusActionsRemaining(resolvedTurn.currentTurnBonusActionsRemaining);
+        setPendingRoll(resolvedTurn.pendingRoll);
+        resolvedTurn.logEntries.forEach((entry) => appendLog(entry));
 
-        if (aliveAfterTurn.length === 0) {
-            setActionsRemaining(0);
-            setGameOverReason("Every challenger is dead. The Silver Wolf remains undefeated.");
-            return;
+        if (resolvedTurn.gameOverReason) {
+            setGameOverReason(resolvedTurn.gameOverReason);
         }
-
-        const turnLogs = [];
-        const schoolsBeforeTurn = updatedSchools.map((school) => ({ ...school }));
-        const schoolsStillStanding = advanceSilverWolf(updatedSchools, turnLogs);
-        const destroyedSchoolCountBefore = schoolsBeforeTurn.filter((school) => school.status === SCHOOL_STATUS_DESTROYED).length;
-        const destroyedSchoolCountAfter = updatedSchools.filter((school) => school.status === SCHOOL_STATUS_DESTROYED).length;
-        const newlyDestroyedSchoolIds = updatedSchools
-            .filter((school) => (
-                school.status === SCHOOL_STATUS_DESTROYED
-                && getSchoolById(schoolsBeforeTurn, school.id)?.status !== SCHOOL_STATUS_DESTROYED
-            ))
-            .map((school) => school.id);
-
-        if (destroyedSchoolCountAfter > destroyedSchoolCountBefore) {
-            updatedPlayers.forEach((player) => {
-                lowerReputation(player, destroyedSchoolCountAfter - destroyedSchoolCountBefore);
-            });
-        }
-
-        if (newlyDestroyedSchoolIds.length > 0) {
-            updatedPlayers.forEach((player) => {
-                const currentLocationId = TRACK_DETAILS[player.position]?.id;
-
-                if (!player.alive || player.injured || !newlyDestroyedSchoolIds.includes(currentLocationId)) {
-                    return;
-                }
-
-                player.injured = true;
-                turnLogs.push(`${getEventPlayerName(player)} is caught in the fall of ${getSchoolEventLabel(getSchoolById(updatedSchools, currentLocationId))} and becomes Injured.`);
-            });
-        }
-
-        setSchools(updatedSchools);
-        turnLogs.forEach((entry) => appendLog(entry));
-
-        if (!schoolsStillStanding) {
-            setActionsRemaining(0);
-            setGameOverReason("The Silver Wolf destroyed all five schools. The valley was not protected.");
-            return;
-        }
-
-        const nextPlayerIndex = getNextLivingIndex(updatedPlayers, currentPlayerIndex);
-        const preparedTurn = consumeNextTurnActionBonus(updatedPlayers, nextPlayerIndex);
-
-        setPlayers(preparedTurn.players);
-        setCurrentPlayerIndex(nextPlayerIndex);
-        setActionsRemaining(preparedTurn.actions);
-        setCurrentTurnBonusActionsRemaining(preparedTurn.consumedBonusActions);
-        setPendingRoll(null);
     }
 
     function finalizeAction(updatedPlayers, updatedSchools, logEntries, refundedActions = 0) {
@@ -3329,82 +2724,42 @@ function PracticeGame() {
 
         setIsResolvingAction(true);
         setUndoState(null);
-        setPlayers((existingPlayers) => {
-            const aliveAfterTurn = getAlivePlayers(existingPlayers);
-
-            if (aliveAfterTurn.length === 0) {
-                setActionsRemaining(0);
-                setGameOverReason("Every challenger is dead. The Silver Wolf remains undefeated.");
-                setPendingRoll(null);
-                setIsResolvingAction(false);
-                return existingPlayers;
-            }
-
-            const turnLogs = [];
-            const updatedSchools = schools.map((school) => ({ ...school }));
-            const schoolsBeforeTurn = updatedSchools.map((school) => ({ ...school }));
-            const schoolsStillStanding = advanceSilverWolf(updatedSchools, turnLogs);
-            const destroyedSchoolCountBefore = schoolsBeforeTurn.filter((school) => school.status === SCHOOL_STATUS_DESTROYED).length;
-            const destroyedSchoolCountAfter = updatedSchools.filter((school) => school.status === SCHOOL_STATUS_DESTROYED).length;
-            const newlyDestroyedSchoolIds = updatedSchools
-                .filter((school) => (
-                    school.status === SCHOOL_STATUS_DESTROYED
-                    && getSchoolById(schoolsBeforeTurn, school.id)?.status !== SCHOOL_STATUS_DESTROYED
-                ))
-                .map((school) => school.id);
-            const updatedPlayers = existingPlayers.map((player) => ({ ...player }));
-
-            if (destroyedSchoolCountAfter > destroyedSchoolCountBefore) {
-                updatedPlayers.forEach((player) => {
-                    lowerReputation(player, destroyedSchoolCountAfter - destroyedSchoolCountBefore);
-                });
-            }
-
-            if (newlyDestroyedSchoolIds.length > 0) {
-                updatedPlayers.forEach((player) => {
-                    const currentLocationId = TRACK_DETAILS[player.position]?.id;
-
-                    if (!player.alive || player.injured || !newlyDestroyedSchoolIds.includes(currentLocationId)) {
-                        return;
-                    }
-
-                    player.injured = true;
-                    turnLogs.push(`${getEventPlayerName(player)} is caught in the fall of ${getSchoolEventLabel(getSchoolById(updatedSchools, currentLocationId))} and becomes Injured.`);
-                });
-            }
-
-            setSchools(updatedSchools);
-            turnLogs.forEach((entry) => appendLog(entry));
-            setPendingRoll(null);
-
-            if (!schoolsStillStanding) {
-                setActionsRemaining(0);
-                setGameOverReason("The Silver Wolf destroyed all five schools. The valley was not protected.");
-                setIsResolvingAction(false);
-                return updatedPlayers;
-            }
-
-            const nextPlayerIndex = getNextLivingIndex(updatedPlayers, currentPlayerIndex);
-            const preparedTurn = consumeNextTurnActionBonus(updatedPlayers, nextPlayerIndex);
-
-            setCurrentPlayerIndex(nextPlayerIndex);
-            setActionsRemaining(preparedTurn.actions);
-            setCurrentTurnBonusActionsRemaining(preparedTurn.consumedBonusActions);
-            setIsResolvingAction(false);
-            return preparedTurn.players;
+        const resolvedTurn = advanceTurnState({
+            currentPlayerIndex,
+            players,
+            schools,
+            randomizer: {
+                chooseIndex: randomizer.chooseIndex,
+                rollWhiteDie: randomizer.rollDie,
+            },
+            getEventPlayerName,
+            getSchoolEventLabel,
         });
+
+        setPlayers(resolvedTurn.players);
+        setSchools(resolvedTurn.schools);
+        setCurrentPlayerIndex(resolvedTurn.nextPlayerIndex);
+        setActionsRemaining(resolvedTurn.actionsRemaining);
+        setCurrentTurnBonusActionsRemaining(resolvedTurn.currentTurnBonusActionsRemaining);
+        setPendingRoll(resolvedTurn.pendingRoll);
+        resolvedTurn.logEntries.forEach((entry) => appendLog(entry));
+        if (resolvedTurn.gameOverReason) {
+            setGameOverReason(resolvedTurn.gameOverReason);
+        }
+        setIsResolvingAction(false);
     }
 
     function resetGame() {
         clearActionAnimationTimeout();
         clearSaveCompletionTimeouts();
+        const nextInitialGameState = createInitialGameState();
         setIsResolvingAction(false);
-        setPlayers(createInitialPlayers());
-        setSchools(createSchools());
-        setCurrentPlayerIndex(0);
-        setActionsRemaining(getActionsForPlayer(createInitialPlayers()[0]));
+        setPlayers(nextInitialGameState.players);
+        setSchools(nextInitialGameState.schools);
+        setCurrentPlayerIndex(nextInitialGameState.currentPlayerIndex);
+        setActionsRemaining(nextInitialGameState.actionsRemaining);
         setCurrentTurnBonusActionsRemaining(0);
-        setNextArrivalOrder(createPlayers().length);
+        setNextArrivalOrder(nextInitialGameState.nextArrivalOrder);
         setPendingRoll(null);
         setWinnerId(null);
         setGameOverReason("");
@@ -3440,125 +2795,7 @@ function PracticeGame() {
     }
 
     function advanceCombatPhase(fighterId = null) {
-        setCombatState((existing) => {
-            if (!existing) {
-                return existing;
-            }
-
-            const leftCombatant = existing.combatants[existing.attackerId];
-            const rightCombatant = existing.combatants[existing.defenderId];
-
-            if (existing.phaseIndex === 0) {
-                if (!fighterId) {
-                    return existing;
-                }
-
-                const actingCombatant = existing.combatants[fighterId];
-
-                if (!actingCombatant?.selectedCardId || !actingCombatant.selectedMode || actingCombatant.reactionLocked) {
-                    return existing;
-                }
-
-                const combatants = {
-                    ...existing.combatants,
-                    [fighterId]: {
-                        ...actingCombatant,
-                        reactionLocked: true,
-                    },
-                };
-                const bothReady = areCombatantsReadyToReveal({
-                    ...existing,
-                    combatants,
-                });
-
-                return {
-                    ...existing,
-                    phaseIndex: bothReady ? 1 : 0,
-                    combatants,
-                };
-            }
-
-            if (existing.phaseIndex === 1) {
-                return {
-                    ...existing,
-                    phaseIndex: 2,
-                };
-            }
-
-            if (existing.phaseIndex === 2) {
-                const leftConfig = getEffectiveCardForCombatant(leftCombatant);
-                const rightConfig = getEffectiveCardForCombatant(rightCombatant);
-
-                if (!leftConfig || !rightConfig) {
-                    return existing;
-                }
-
-                const leftOutcome = resolveAttackAgainstDefender(leftConfig, rightConfig);
-                const rightOutcome = resolveAttackAgainstDefender(rightConfig, leftConfig);
-                const leftReversalHits = leftConfig.grantsReversal ? leftOutcome.blocks : 0;
-                const rightReversalHits = rightConfig.grantsReversal ? rightOutcome.blocks : 0;
-                const nextLeftHitPoints = Math.max(0, leftCombatant.currentHitPoints - rightOutcome.hits - rightReversalHits);
-                const nextRightHitPoints = Math.max(0, rightCombatant.currentHitPoints - leftOutcome.hits - leftReversalHits);
-                const resolutionSummary = {
-                    leftSummary: `${leftCombatant.name} deals ${leftOutcome.hits + leftReversalHits} total damage and blocks ${rightOutcome.blocks} attack(s).`,
-                    rightSummary: `${rightCombatant.name} deals ${rightOutcome.hits + rightReversalHits} total damage and blocks ${leftOutcome.blocks} attack(s).`,
-                };
-                const nextLog = [
-                    `${leftCombatant.name} deals ${leftOutcome.hits} strike damage${leftReversalHits ? ` and ${leftReversalHits} Reversal damage` : ""}. ${rightCombatant.name} deals ${rightOutcome.hits} strike damage${rightReversalHits ? ` and ${rightReversalHits} Reversal damage` : ""}.`,
-                ].concat(existing.clashLog);
-
-                return {
-                    ...existing,
-                    phaseIndex: 3,
-                    clashLog: nextLog,
-                    resolutionSummary,
-                    combatants: {
-                        ...existing.combatants,
-                        [existing.attackerId]: {
-                            ...leftCombatant,
-                            currentHitPoints: nextLeftHitPoints,
-                        },
-                        [existing.defenderId]: {
-                            ...rightCombatant,
-                            currentHitPoints: nextRightHitPoints,
-                        },
-                    },
-                };
-            }
-
-            if (existing.phaseIndex === 3) {
-                const leftStillStanding = existing.combatants[existing.attackerId].currentHitPoints > 0;
-                const rightStillStanding = existing.combatants[existing.defenderId].currentHitPoints > 0;
-
-                if (!leftStillStanding || !rightStillStanding) {
-                    return existing;
-                }
-
-                return {
-                    ...existing,
-                    phaseIndex: 4,
-                };
-            }
-
-            if (existing.phaseIndex >= COMBAT_PHASES.length - 1) {
-                return {
-                    ...existing,
-                    clashNumber: existing.clashNumber + 1,
-                    phaseIndex: 0,
-                    resolutionSummary: null,
-                    combatants: {
-                        ...existing.combatants,
-                        [existing.attackerId]: settleCombatCardUse(existing.combatants[existing.attackerId]),
-                        [existing.defenderId]: settleCombatCardUse(existing.combatants[existing.defenderId]),
-                    },
-                };
-            }
-
-            return {
-                ...existing,
-                phaseIndex: existing.phaseIndex + 1,
-            };
-        });
+        setCombatState((existing) => advanceCombatState(existing, fighterId, { shuffle: randomizer.shuffle }));
     }
 
     function closeCombatModal() {
@@ -3566,186 +2803,26 @@ function PracticeGame() {
     }
 
     function chooseCombatCard(fighterId, cardId) {
-        setCombatState((existing) => {
-            if (!existing) {
-                return existing;
-            }
-
-            const combatant = existing.combatants[fighterId];
-            const selectedCard = combatant ? getCombatCardById(combatant, cardId) : null;
-
-            if (!combatant || !selectedCard) {
-                return existing;
-            }
-
-            if (combatant.reactionLocked) {
-                return existing;
-            }
-
-            if (combatant.selectedCardId) {
-                const previouslySelectedCard = getCombatCardById(combatant, combatant.selectedCardId);
-                const refundAmount = previouslySelectedCard ? getModeCost(previouslySelectedCard, combatant.selectedMode) : 0;
-
-                return {
-                    ...existing,
-                    combatants: {
-                        ...existing.combatants,
-                        [fighterId]: {
-                            ...combatant,
-                            currentFormPoints: Math.min(combatant.maxFormPoints, combatant.currentFormPoints + refundAmount),
-                            selectedCardId: null,
-                            effectiveCardId: null,
-                            selectedMode: null,
-                            stumbleTriggered: false,
-                        },
-                    },
-                };
-            }
-
-            const defaultModeId = selectedCard.isSpecial ? COMBAT_MODE_NORMAL : null;
-
-            return {
-                ...existing,
-                combatants: {
-                    ...existing.combatants,
-                    [fighterId]: {
-                        ...combatant,
-                        selectedCardId: cardId,
-                        effectiveCardId: cardId,
-                        selectedMode: defaultModeId,
-                        stumbleTriggered: false,
-                    },
-                },
-            };
-        });
+        setCombatState((existing) => selectCombatCard(existing, fighterId, cardId));
     }
 
     function chooseCombatMode(fighterId, modeId) {
-        setCombatState((existing) => {
-            if (!existing) {
-                return existing;
-            }
-
-            const combatant = existing.combatants[fighterId];
-            const selectedCard = combatant ? getCombatCardById(combatant, combatant.selectedCardId) : null;
-
-            if (!combatant || !selectedCard) {
-                return existing;
-            }
-
-            if (combatant.reactionLocked) {
-                return existing;
-            }
-
-            const previousCost = getModeCost(selectedCard, combatant.selectedMode);
-            const nextCost = getModeCost(selectedCard, modeId);
-            const costDelta = nextCost - previousCost;
-
-            if (costDelta > combatant.currentFormPoints) {
-                return existing;
-            }
-
-            return {
-                ...existing,
-                combatants: {
-                    ...existing.combatants,
-                    [fighterId]: {
-                        ...combatant,
-                        selectedMode: modeId,
-                        effectiveCardId: combatant.selectedCardId,
-                        currentFormPoints: Math.max(0, Math.min(combatant.maxFormPoints, combatant.currentFormPoints - costDelta)),
-                        formSpendFxSeq: costDelta > 0 ? (combatant.formSpendFxSeq ?? 0) + 1 : (combatant.formSpendFxSeq ?? 0),
-                        stumbleTriggered: false,
-                    },
-                },
-            };
-        });
+        setCombatState((existing) => selectCombatMode(existing, fighterId, modeId));
     }
 
     function triggerCombatStumble(fighterId) {
-        setCombatState((existing) => {
-            if (!existing) {
-                return existing;
-            }
-
-            const combatant = existing.combatants[fighterId];
-            const selectedCard = combatant ? getCombatCardById(combatant, combatant.selectedCardId) : null;
-
-            if (!combatant || !selectedCard) {
-                return existing;
-            }
-
-            const availableCards = combatant.hand.filter((card) => card.id !== combatant.selectedCardId);
-
-            if (availableCards.length === 0) {
-                return existing;
-            }
-
-            const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
-
-            return {
-                ...existing,
-                clashLog: [`${combatant.name} triggers Stumble and swaps into ${randomCard.name}.`].concat(existing.clashLog),
-                combatants: {
-                    ...existing.combatants,
-                    [fighterId]: {
-                        ...combatant,
-                        effectiveCardId: randomCard.id,
-                        stumbleTriggered: true,
-                    },
-                },
-            };
-        });
+        setCombatState((existing) => advanceCombatStumble(existing, fighterId, { chooseIndex: randomizer.chooseIndex }));
     }
 
     React.useEffect(() => {
-        if (!combatState) {
+        const result = getCombatEncounterResult(combatState);
+
+        if (!result) {
             return;
         }
 
-        const leftCombatant = combatState.combatants[combatState.attackerId];
-        const rightCombatant = combatState.combatants[combatState.defenderId];
-
-        if (!leftCombatant || !rightCombatant) {
-            return;
-        }
-
-        const bothDown = leftCombatant.currentHitPoints <= 0 && rightCombatant.currentHitPoints <= 0;
-        const loserId = bothDown
-            ? combatState.defenderId
-            : leftCombatant.currentHitPoints <= 0
-                ? combatState.attackerId
-                : rightCombatant.currentHitPoints <= 0
-                    ? combatState.defenderId
-                    : null;
-
-        if (!loserId) {
-            return;
-        }
-
-        const winnerCombatant = loserId === combatState.attackerId ? rightCombatant : leftCombatant;
-        const loserCombatant = loserId === combatState.attackerId ? leftCombatant : rightCombatant;
-
-        setPlayers((existingPlayers) => existingPlayers.map((player) => {
-            if (player.id === loserId) {
-                return {
-                    ...player,
-                    injured: true,
-                    reputation: clampStat(player.reputation - 1),
-                };
-            }
-
-            if (player.id === winnerCombatant.id) {
-                return {
-                    ...player,
-                    reputation: clampStat(player.reputation + 1),
-                    bonusActionsNextTurn: (player.bonusActionsNextTurn || 0) + 1,
-                };
-            }
-
-            return player;
-        }));
-        appendLog(`${getEventPlayerName(winnerCombatant)} defeats ${getEventPlayerName(loserCombatant)} in combat. ${getEventPlayerName(winnerCombatant)} gains 1 Reputation and a temporary extra action next turn. ${getEventPlayerName(loserCombatant)} becomes Injured and loses 1 Reputation.`);
+        setPlayers((existingPlayers) => applyCombatEncounterResult(existingPlayers, result));
+        appendLog(`${getEventPlayerName(result.winnerCombatant)} defeats ${getEventPlayerName(result.loserCombatant)} in combat. ${getEventPlayerName(result.winnerCombatant)} gains 1 Reputation and a temporary extra action next turn. ${getEventPlayerName(result.loserCombatant)} becomes Injured and loses 1 Reputation.`);
         setCombatState(null);
     }, [combatState]);
 
@@ -3773,7 +2850,10 @@ function PracticeGame() {
 
             setPendingRoll(null);
             setChallengeState(null);
-            setCombatState(startCombatEncounter(updatedPlayers, challengeState.challengerId, challengeState.targetId));
+            setCombatState(startCombatEncounter(updatedPlayers, challengeState.challengerId, challengeState.targetId, {
+                shuffle: randomizer.shuffle,
+                getPlayerDisplayName,
+            }));
 
             if (shouldBankAction) {
                 resolveTurnEnd(updatedPlayers, cloneSchoolsSnapshot(schools));
@@ -3829,7 +2909,7 @@ function PracticeGame() {
             return;
         }
 
-        const result = Math.floor(Math.random() * 4) + 1;
+        const result = randomizer.rollQuestDie();
         setUndoState(null);
         consumeActionWithIndicators(() => {
             const shouldBankAction = actionsRemaining > 1;
@@ -3865,13 +2945,17 @@ function PracticeGame() {
             pendingRoll,
         });
 
-        const updatedPlayers = clonePlayersSnapshot(players);
-        const updatedSchools = cloneSchoolsSnapshot(schools);
-        const activePlayer = updatedPlayers[currentPlayerIndex];
-        activePlayer.position = normalizeIndex(activePlayer.position + direction);
-        activePlayer.arrivalOrder = nextArrivalOrder;
-        setNextArrivalOrder(nextArrivalOrder + 1);
-        finalizeAction(updatedPlayers, updatedSchools, []);
+        const actionResult = resolveTravelAction({
+            currentPlayerIndex,
+            direction,
+            nextArrivalOrder,
+            normalizeIndex,
+            players,
+            schools,
+        });
+
+        setNextArrivalOrder(actionResult.nextArrivalOrder);
+        finalizeAction(actionResult.players, actionResult.schools, actionResult.logEntries);
     }
 
     function challengeSilverWolf() {
@@ -3880,30 +2964,30 @@ function PracticeGame() {
         }
 
         setUndoState(null);
-        const updatedPlayers = clonePlayersSnapshot(players);
-        const updatedSchools = cloneSchoolsSnapshot(schools);
-        const challenger = updatedPlayers[currentPlayerIndex];
-        const wolfStrength = getSilverWolfStrength(updatedSchools) + randomDie();
-        const challengerStrength = buildCombatScore(challenger);
-        const logEntries = [
-            `${getEventPlayerName(challenger)} challenges the Silver Wolf with Power ${challenger.power}, Stamina ${challenger.stamina}, Agility ${challenger.agility}, Chi ${challenger.chi}, and Wit ${challenger.wit}.`,
-        ];
+        const actionResult = resolveSilverWolfChallenge({
+            currentPlayerIndex,
+            getEventPlayerName,
+            players,
+            rollDie: randomizer.rollDie,
+            schools,
+        });
 
-        if (challengerStrength > wolfStrength) {
-            logEntries.push(`${getEventPlayerName(challenger)} defeats the Silver Wolf in combat and wins Valley of the Silver Wolf.`);
+        if (!actionResult) {
+            return;
+        }
+
+        if (actionResult.winnerId) {
             consumeActionWithIndicators(() => {
-                setPlayers(updatedPlayers);
-                setSchools(updatedSchools);
+                setPlayers(actionResult.players);
+                setSchools(actionResult.schools);
                 setActionsRemaining(0);
-                setWinnerId(challenger.id);
-                logEntries.forEach((entry) => appendLog(entry));
+                setWinnerId(actionResult.winnerId);
+                actionResult.logEntries.forEach((entry) => appendLog(entry));
             });
             return;
         }
 
-        challenger.alive = false;
-        logEntries.push(`The Silver Wolf kills ${getEventPlayerName(challenger)}. His kung fu was too strong.`);
-        finalizeAction(updatedPlayers, updatedSchools, logEntries);
+        finalizeAction(actionResult.players, actionResult.schools, actionResult.logEntries);
     }
 
     function healCurrentPlayer() {
@@ -3928,12 +3012,15 @@ function PracticeGame() {
             pendingRoll,
         });
 
-        const updatedPlayers = clonePlayersSnapshot(players);
-        const updatedSchools = cloneSchoolsSnapshot(schools);
-        const activePlayer = updatedPlayers[currentPlayerIndex];
+        const actionResult = resolveHealAction({
+            currentLocation,
+            currentPlayerIndex,
+            getEventPlayerName,
+            players,
+            schools,
+        });
 
-        activePlayer.injured = false;
-        finalizeAction(updatedPlayers, updatedSchools, [`${getEventPlayerName(activePlayer)} heals at ${currentLocation.name}.`]);
+        finalizeAction(actionResult.players, actionResult.schools, actionResult.logEntries);
     }
 
     function saveCurrentSchool() {
@@ -3958,49 +3045,25 @@ function PracticeGame() {
             pendingRoll,
         });
 
-        const updatedPlayers = clonePlayersSnapshot(players);
-        const updatedSchools = cloneSchoolsSnapshot(schools);
-        const school = getSchoolById(updatedSchools, currentLocation.id);
+        const actionResult = resolveSaveSchoolAction({
+            currentLocationId: currentLocation.id,
+            currentPlayerId: currentPlayer.id,
+            currentPlayerName: getEventPlayerName(currentPlayer),
+            getEventPlayerName,
+            getSchoolEventLabel,
+            players,
+            schools,
+        });
 
-        if (!school || school.status !== SCHOOL_STATUS_SIEGED) {
+        if (!actionResult) {
             return;
         }
 
-        const nextProgress = Math.min(3, (school.saveProgress || 0) + 1);
-
-        school.saveProgress = nextProgress;
-        school.defenders = school.defenders || [];
-
-        if (!school.defenders.includes(currentPlayer.id)) {
-            school.defenders = school.defenders.concat(currentPlayer.id);
+        if (actionResult.completedSchoolId) {
+            queueSchoolSaveCompletion(actionResult.completedSchoolId);
         }
 
-        if (nextProgress >= 3) {
-            school.status = SCHOOL_STATUS_WHOLE;
-            school.isCompletingSave = true;
-            const defenderNames = updatedPlayers
-                .filter((player) => school.defenders.includes(player.id))
-                .map((player) => player.name);
-
-            updatedPlayers.forEach((player) => {
-                if (school.defenders.includes(player.id)) {
-                    raiseReputation(player, 1);
-                }
-            });
-            queueSchoolSaveCompletion(school.id);
-            finalizeAction(
-                updatedPlayers,
-                updatedSchools,
-                [`${formatNameList(defenderNames.map((name) => getEventPlayerName(updatedPlayers.find((player) => player.name === name))))} saved ${getSchoolEventLabel(school)}!`]
-            );
-            return;
-        }
-
-        finalizeAction(
-            updatedPlayers,
-            updatedSchools,
-            [`${getEventPlayerName(currentPlayer)} defends ${getSchoolEventLabel(school)}. Progress is now ${nextProgress}/3.`]
-        );
+        finalizeAction(actionResult.players, actionResult.schools, actionResult.logEntries);
     }
 
     function undoLastAction() {
