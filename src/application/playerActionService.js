@@ -7,6 +7,8 @@ import {
     canChallengeSilverWolf,
     getSchoolById,
     getSilverWolfStrength,
+    grantSingleUseActionForNextTurn,
+    lowerReputation,
     raiseReputation,
 } from "../domain/rules.js";
 import {
@@ -154,6 +156,71 @@ export function resolveSilverWolfChallenge({
         logEntries,
         winnerId: null,
         challengerDied: true,
+    };
+}
+
+export function resolveAcceptedChallenge({
+    actionsRemaining,
+    challengerId,
+    players,
+}) {
+    const shouldBankAction = actionsRemaining > 1;
+    const updatedPlayers = shouldBankAction
+        ? grantSingleUseActionForNextTurn(players, challengerId)
+        : players;
+
+    return {
+        players: updatedPlayers,
+        shouldBankAction,
+    };
+}
+
+export function resolveDeclinedChallenge({
+    actionsRemaining,
+    challengerId,
+    getEventPlayerName,
+    players,
+    targetId,
+}) {
+    const updatedPlayers = clonePlayersSnapshot(players);
+    const declinedPlayer = updatedPlayers.find((player) => player.id === targetId);
+    const challenger = updatedPlayers.find((player) => player.id === challengerId) || null;
+    const target = updatedPlayers.find((player) => player.id === targetId) || null;
+    const shouldBankAction = actionsRemaining > 1;
+
+    if (declinedPlayer) {
+        lowerReputation(declinedPlayer, 1);
+    }
+
+    const playersAfterBonus = shouldBankAction
+        ? grantSingleUseActionForNextTurn(updatedPlayers, challengerId)
+        : updatedPlayers;
+
+    return {
+        players: playersAfterBonus,
+        shouldBankAction,
+        logEntries: challenger && target
+            ? [`${getEventPlayerName(target)} declines ${getEventPlayerName(challenger)}'s challenge and loses 1 Reputation.`]
+            : [],
+    };
+}
+
+export function resolveRollFateAction({
+    actionsRemaining,
+    currentPlayerId,
+    players,
+    rollQuestDie,
+}) {
+    const result = rollQuestDie();
+    const shouldBankAction = actionsRemaining > 1;
+    const updatedPlayers = shouldBankAction
+        ? grantSingleUseActionForNextTurn(players, currentPlayerId)
+        : players;
+
+    return {
+        players: updatedPlayers,
+        pendingRoll: result,
+        shouldBankAction,
     };
 }
 

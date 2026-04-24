@@ -45,12 +45,18 @@ import {
     getRivalsAtPosition,
     getSchoolById,
     getSchoolByName,
-    grantSingleUseActionForNextTurn,
-    lowerReputation,
 } from "./domain/rules.js";
 import { advanceTurnState } from "./application/turnService.js";
+import { resolveActionProgress } from "./application/actionResolutionService.js";
 import {
+    createUndoSnapshot,
+    restoreUndoSnapshot,
+} from "./application/undoService.js";
+import {
+    resolveAcceptedChallenge,
+    resolveDeclinedChallenge,
     resolveHealAction,
+    resolveRollFateAction,
     resolveSaveSchoolAction,
     resolveSilverWolfChallenge,
     resolveTravelAction,
@@ -2671,9 +2677,8 @@ function PracticeGame() {
         finish();
     }
 
-    function resolveTurnEnd(updatedPlayers, updatedSchools) {
-        setUndoState(null);
-        const resolvedTurn = advanceTurnState({
+    function getResolvedTurn(updatedPlayers, updatedSchools) {
+        return advanceTurnState({
             currentPlayerIndex,
             players: updatedPlayers,
             schools: updatedSchools,
@@ -2684,37 +2689,91 @@ function PracticeGame() {
             getEventPlayerName,
             getSchoolEventLabel,
         });
+    }
 
-        setPlayers(resolvedTurn.players);
-        setSchools(resolvedTurn.schools);
-        setCurrentPlayerIndex(resolvedTurn.nextPlayerIndex);
-        setActionsRemaining(resolvedTurn.actionsRemaining);
-        setCurrentTurnBonusActionsRemaining(resolvedTurn.currentTurnBonusActionsRemaining);
-        setPendingRoll(resolvedTurn.pendingRoll);
+    function applyGameState({
+        nextPlayers = players,
+        nextSchools = schools,
+        nextCurrentPlayerIndex = currentPlayerIndex,
+        nextActionsRemaining = actionsRemaining,
+        nextCurrentTurnBonusActionsRemaining = currentTurnBonusActionsRemaining,
+        nextNextArrivalOrder = nextArrivalOrder,
+        nextPendingRoll = pendingRoll,
+    }) {
+        setPlayers(nextPlayers);
+        setSchools(nextSchools);
+        setCurrentPlayerIndex(nextCurrentPlayerIndex);
+        setActionsRemaining(nextActionsRemaining);
+        setCurrentTurnBonusActionsRemaining(nextCurrentTurnBonusActionsRemaining);
+        setNextArrivalOrder(nextNextArrivalOrder);
+        setPendingRoll(nextPendingRoll);
+    }
+
+    function applyResolvedTurn(resolvedTurn, { clearUndo = false, clearResolving = false } = {}) {
+        if (clearUndo) {
+            setUndoState(null);
+        }
+
+        applyGameState({
+            nextPlayers: resolvedTurn.players,
+            nextSchools: resolvedTurn.schools,
+            nextCurrentPlayerIndex: resolvedTurn.nextPlayerIndex,
+            nextActionsRemaining: resolvedTurn.actionsRemaining,
+            nextCurrentTurnBonusActionsRemaining: resolvedTurn.currentTurnBonusActionsRemaining,
+            nextPendingRoll: resolvedTurn.pendingRoll,
+        });
         resolvedTurn.logEntries.forEach((entry) => appendLog(entry));
 
         if (resolvedTurn.gameOverReason) {
             setGameOverReason(resolvedTurn.gameOverReason);
         }
+
+        if (clearResolving) {
+            setIsResolvingAction(false);
+        }
+    }
+
+    function resolveTurnEnd(updatedPlayers, updatedSchools) {
+        const resolvedTurn = getResolvedTurn(updatedPlayers, updatedSchools);
+        applyResolvedTurn(resolvedTurn, { clearUndo: true });
     }
 
     function finalizeAction(updatedPlayers, updatedSchools, logEntries, refundedActions = 0) {
         consumeActionWithIndicators(() => {
-            const nextActionsRemaining = Math.max(0, actionsRemaining - 1 + refundedActions);
-            const nextBonusActionsRemaining = Math.max(0, currentTurnBonusActionsRemaining - 1);
+            const progress = resolveActionProgress({
+                actionsRemaining,
+                currentTurnBonusActionsRemaining,
+                pendingRoll: null,
+                refundedActions,
+            });
 
             setPlayers(updatedPlayers);
             setSchools(updatedSchools);
             logEntries.forEach((entry) => appendLog(entry));
-            setPendingRoll(null);
+            setPendingRoll(progress.pendingRoll);
 
-            if (nextActionsRemaining > 0) {
-                setActionsRemaining(nextActionsRemaining);
-                setCurrentTurnBonusActionsRemaining(nextBonusActionsRemaining);
+            if (!progress.shouldEndTurn) {
+                setActionsRemaining(progress.nextActionsRemaining);
+                setCurrentTurnBonusActionsRemaining(progress.nextBonusActionsRemaining);
                 return;
             }
             resolveTurnEnd(updatedPlayers, updatedSchools);
         }, refundedActions);
+    }
+
+    function applyActionWithoutTurnEnd(updatedPlayers, pendingRollValue = null) {
+        const progress = resolveActionProgress({
+            actionsRemaining,
+            currentTurnBonusActionsRemaining,
+            pendingRoll: pendingRollValue,
+        });
+
+        applyGameState({
+            nextPlayers: updatedPlayers,
+            nextActionsRemaining: progress.nextActionsRemaining,
+            nextCurrentTurnBonusActionsRemaining: progress.nextBonusActionsRemaining,
+            nextPendingRoll: progress.pendingRoll,
+        });
     }
 
     function passTurn() {
@@ -2723,30 +2782,8 @@ function PracticeGame() {
         }
 
         setIsResolvingAction(true);
-        setUndoState(null);
-        const resolvedTurn = advanceTurnState({
-            currentPlayerIndex,
-            players,
-            schools,
-            randomizer: {
-                chooseIndex: randomizer.chooseIndex,
-                rollWhiteDie: randomizer.rollDie,
-            },
-            getEventPlayerName,
-            getSchoolEventLabel,
-        });
-
-        setPlayers(resolvedTurn.players);
-        setSchools(resolvedTurn.schools);
-        setCurrentPlayerIndex(resolvedTurn.nextPlayerIndex);
-        setActionsRemaining(resolvedTurn.actionsRemaining);
-        setCurrentTurnBonusActionsRemaining(resolvedTurn.currentTurnBonusActionsRemaining);
-        setPendingRoll(resolvedTurn.pendingRoll);
-        resolvedTurn.logEntries.forEach((entry) => appendLog(entry));
-        if (resolvedTurn.gameOverReason) {
-            setGameOverReason(resolvedTurn.gameOverReason);
-        }
-        setIsResolvingAction(false);
+        const resolvedTurn = getResolvedTurn(players, schools);
+        applyResolvedTurn(resolvedTurn, { clearUndo: true, clearResolving: true });
     }
 
     function resetGame() {
@@ -2754,13 +2791,15 @@ function PracticeGame() {
         clearSaveCompletionTimeouts();
         const nextInitialGameState = createInitialGameState();
         setIsResolvingAction(false);
-        setPlayers(nextInitialGameState.players);
-        setSchools(nextInitialGameState.schools);
-        setCurrentPlayerIndex(nextInitialGameState.currentPlayerIndex);
-        setActionsRemaining(nextInitialGameState.actionsRemaining);
-        setCurrentTurnBonusActionsRemaining(0);
-        setNextArrivalOrder(nextInitialGameState.nextArrivalOrder);
-        setPendingRoll(null);
+        applyGameState({
+            nextPlayers: nextInitialGameState.players,
+            nextSchools: nextInitialGameState.schools,
+            nextCurrentPlayerIndex: nextInitialGameState.currentPlayerIndex,
+            nextActionsRemaining: nextInitialGameState.actionsRemaining,
+            nextCurrentTurnBonusActionsRemaining: 0,
+            nextNextArrivalOrder: nextInitialGameState.nextArrivalOrder,
+            nextPendingRoll: null,
+        });
         setWinnerId(null);
         setGameOverReason("");
         setBattleLog([]);
@@ -2843,26 +2882,25 @@ function PracticeGame() {
         }
 
         consumeActionWithIndicators(() => {
-            const shouldBankAction = actionsRemaining > 1;
-            const updatedPlayers = shouldBankAction
-                ? grantSingleUseActionForNextTurn(players, challengeState.challengerId)
-                : players;
+            const actionResult = resolveAcceptedChallenge({
+                actionsRemaining,
+                challengerId: challengeState.challengerId,
+                players,
+            });
 
             setPendingRoll(null);
             setChallengeState(null);
-            setCombatState(startCombatEncounter(updatedPlayers, challengeState.challengerId, challengeState.targetId, {
+            setCombatState(startCombatEncounter(actionResult.players, challengeState.challengerId, challengeState.targetId, {
                 shuffle: randomizer.shuffle,
                 getPlayerDisplayName,
             }));
 
-            if (shouldBankAction) {
-                resolveTurnEnd(updatedPlayers, cloneSchoolsSnapshot(schools));
+            if (actionResult.shouldBankAction) {
+                resolveTurnEnd(actionResult.players, cloneSchoolsSnapshot(schools));
                 return;
             }
 
-            setPlayers(updatedPlayers);
-            setActionsRemaining((existing) => Math.max(0, existing - 1));
-            setCurrentTurnBonusActionsRemaining((existing) => Math.max(0, existing - 1));
+            applyActionWithoutTurnEnd(actionResult.players);
         });
     }
 
@@ -2871,36 +2909,25 @@ function PracticeGame() {
             return;
         }
 
-        const challenger = players.find((player) => player.id === challengeState.challengerId);
-        const target = players.find((player) => player.id === challengeState.targetId);
-
         consumeActionWithIndicators(() => {
-            const updatedPlayers = players.map((player) => ({ ...player }));
-            const declinedPlayer = updatedPlayers.find((player) => player.id === challengeState.targetId);
-            const shouldBankAction = actionsRemaining > 1;
-
-            if (declinedPlayer) {
-                lowerReputation(declinedPlayer, 1);
-            }
-
-            const playersAfterBonus = shouldBankAction
-                ? grantSingleUseActionForNextTurn(updatedPlayers, challengeState.challengerId)
-                : updatedPlayers;
+            const actionResult = resolveDeclinedChallenge({
+                actionsRemaining,
+                challengerId: challengeState.challengerId,
+                getEventPlayerName,
+                players,
+                targetId: challengeState.targetId,
+            });
 
             setPendingRoll(null);
             setChallengeState(null);
-            if (challenger && target) {
-                appendLog(`${getEventPlayerName(target)} declines ${getEventPlayerName(challenger)}'s challenge and loses 1 Reputation.`);
-            }
+            actionResult.logEntries.forEach((entry) => appendLog(entry));
 
-            if (shouldBankAction) {
-                resolveTurnEnd(playersAfterBonus, cloneSchoolsSnapshot(schools));
+            if (actionResult.shouldBankAction) {
+                resolveTurnEnd(actionResult.players, cloneSchoolsSnapshot(schools));
                 return;
             }
 
-            setPlayers(playersAfterBonus);
-            setActionsRemaining((existing) => Math.max(0, existing - 1));
-            setCurrentTurnBonusActionsRemaining((existing) => Math.max(0, existing - 1));
+            applyActionWithoutTurnEnd(actionResult.players);
         });
     }
 
@@ -2909,24 +2936,22 @@ function PracticeGame() {
             return;
         }
 
-        const result = randomizer.rollQuestDie();
         setUndoState(null);
         consumeActionWithIndicators(() => {
-            const shouldBankAction = actionsRemaining > 1;
-            const updatedPlayers = shouldBankAction
-                ? grantSingleUseActionForNextTurn(players, currentPlayer.id)
-                : players;
+            const actionResult = resolveRollFateAction({
+                actionsRemaining,
+                currentPlayerId: currentPlayer.id,
+                players,
+                rollQuestDie: randomizer.rollQuestDie,
+            });
 
-            if (shouldBankAction) {
-                setPendingRoll(result);
-                resolveTurnEnd(updatedPlayers, cloneSchoolsSnapshot(schools));
+            if (actionResult.shouldBankAction) {
+                setPendingRoll(actionResult.pendingRoll);
+                resolveTurnEnd(actionResult.players, cloneSchoolsSnapshot(schools));
                 return;
             }
 
-            setPlayers(updatedPlayers);
-            setPendingRoll(result);
-            setActionsRemaining((existing) => Math.max(0, existing - 1));
-            setCurrentTurnBonusActionsRemaining((existing) => Math.max(0, existing - 1));
+            applyActionWithoutTurnEnd(actionResult.players, actionResult.pendingRoll);
         });
     }
 
@@ -2935,15 +2960,15 @@ function PracticeGame() {
             return;
         }
 
-        setUndoState({
-            playerId: currentPlayer.id,
-            players: clonePlayersSnapshot(players),
-            schools: cloneSchoolsSnapshot(schools),
+        setUndoState(createUndoSnapshot({
             actionsRemaining,
+            battleLog,
             nextArrivalOrder,
-            battleLog: battleLog.slice(),
             pendingRoll,
-        });
+            playerId: currentPlayer.id,
+            players,
+            schools,
+        }));
 
         const actionResult = resolveTravelAction({
             currentPlayerIndex,
@@ -3002,15 +3027,15 @@ function PracticeGame() {
             return;
         }
 
-        setUndoState({
-            playerId: currentPlayer.id,
-            players: clonePlayersSnapshot(players),
-            schools: cloneSchoolsSnapshot(schools),
+        setUndoState(createUndoSnapshot({
             actionsRemaining,
+            battleLog,
             nextArrivalOrder,
-            battleLog: battleLog.slice(),
             pendingRoll,
-        });
+            playerId: currentPlayer.id,
+            players,
+            schools,
+        }));
 
         const actionResult = resolveHealAction({
             currentLocation,
@@ -3035,15 +3060,15 @@ function PracticeGame() {
             return;
         }
 
-        setUndoState({
-            playerId: currentPlayer.id,
-            players: clonePlayersSnapshot(players),
-            schools: cloneSchoolsSnapshot(schools),
+        setUndoState(createUndoSnapshot({
             actionsRemaining,
+            battleLog,
             nextArrivalOrder,
-            battleLog: battleLog.slice(),
             pendingRoll,
-        });
+            playerId: currentPlayer.id,
+            players,
+            schools,
+        }));
 
         const actionResult = resolveSaveSchoolAction({
             currentLocationId: currentLocation.id,
@@ -3072,16 +3097,17 @@ function PracticeGame() {
         }
 
         clearActionAnimationTimeout();
-        const restoredPlayers = clonePlayersSnapshot(undoState.players);
-        const restoredSchools = cloneSchoolsSnapshot(undoState.schools);
+        const restoredState = restoreUndoSnapshot(undoState);
 
-        syncSchoolSaveCompletionTimeouts(restoredSchools);
-        setPlayers(restoredPlayers);
-        setSchools(restoredSchools);
-        setActionsRemaining(undoState.actionsRemaining);
-        setNextArrivalOrder(undoState.nextArrivalOrder);
-        setBattleLog(undoState.battleLog.slice());
-        setPendingRoll(undoState.pendingRoll);
+        syncSchoolSaveCompletionTimeouts(restoredState.schools);
+        applyGameState({
+            nextPlayers: restoredState.players,
+            nextSchools: restoredState.schools,
+            nextActionsRemaining: restoredState.actionsRemaining,
+            nextNextArrivalOrder: restoredState.nextArrivalOrder,
+            nextPendingRoll: restoredState.pendingRoll,
+        });
+        setBattleLog(restoredState.battleLog);
         setUndoState(null);
         setIsResolvingAction(false);
     }
